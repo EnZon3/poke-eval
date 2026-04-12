@@ -2,7 +2,7 @@
 
 [![Node.js >=22](https://img.shields.io/badge/node-%3E%3D22-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![License: AGPL](https://img.shields.io/badge/License-AGPL-3.0-blue.svg)](https://opensource.org/licenses/AGPL-3.0)
+[![License: AGPL](https://img.shields.io/badge/License-AGPLv3-blue.svg)](https://opensource.org/licenses/AGPL-3.0)
 
 A TypeScript Pokémon matchup engine for ranking team-vs-team options from JSON teams, PKHeX-compatible save files, named trainers, or an interactive terminal UI.
 
