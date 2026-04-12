@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { loadData } from './data.js';
 import { evaluateTeams } from './evaluation.js';
 import { promptForTeam, printResultsPretty, runTUI } from './interactive.js';
@@ -193,6 +194,9 @@ export async function runCli(): Promise<void> {
 	}
 
 	if (launchTui) {
+		if ((process as { pkg?: unknown }).pkg) {
+			throw new Error('TUI mode is not available in packaged binaries yet. Use --my and --enemy JSON inputs with optional --json output.');
+		}
 		await runTUI({ gen, myFile, mySaveFile, enemyFile, game, trainerName, dataSource, trainerSource, jsonOutput, evaluationOptions });
 		return;
 	}
@@ -204,16 +208,14 @@ export async function runCli(): Promise<void> {
 	} else if (!myFile) {
 		myTeam = await promptForTeam();
 	} else {
-		const fs = await import('fs');
-		myTeam = JSON.parse(fs.readFileSync(myFile, 'utf8'));
+		myTeam = JSON.parse(readFileSync(myFile, 'utf8'));
 	}
 
 	let enemyTeam: PokemonSet[];
 	if (trainerName && game) {
 		enemyTeam = await fetchTrainerTeamFromSource(trainerSource, game, trainerName);
 	} else if (enemyFile) {
-		const fs = await import('fs');
-		enemyTeam = JSON.parse(fs.readFileSync(enemyFile, 'utf8'));
+		enemyTeam = JSON.parse(readFileSync(enemyFile, 'utf8'));
 	} else if (enemyBuilder) {
 		enemyTeam = await promptForTeam();
 	} else {

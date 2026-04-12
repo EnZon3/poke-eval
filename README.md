@@ -13,6 +13,8 @@ Designed for practical matchup planning: fast enough for iteration, detailed eno
 - [Highlights](#highlights)
 - [Repository status](#repository-status)
 - [Getting started](#getting-started)
+- [For non-CLI users](#for-non-cli-users)
+- [Packaged app builds (no Node.js needed)](#packaged-app-builds-no-nodejs-needed)
 - [Validation](#validation)
 - [Quick usage](#quick-usage)
 - [CLI options](#cli-options)
@@ -63,6 +65,101 @@ Show CLI help:
 
 ```bash
 npm start -- --help
+```
+
+## For non-CLI users
+
+If you do not work in terminals often, use the guided TUI flow:
+
+1. Open this project folder in VS Code.
+2. Open the built-in terminal (`Terminal` → `New Terminal`).
+3. Run:
+
+```bash
+npm install
+npm start -- --tui
+```
+
+4. In setup, choose your sources (JSON/save/trainer) and select `doubles` or `singles`.
+5. In editor, press `c` to calculate.
+6. In results, press `h` for help and `b` to go back and edit.
+
+Quick keys:
+
+- `Enter`: confirm / continue
+- `Arrow keys`: move selection
+- `e`: edit selected field
+- `c`: calculate
+- `q`: quit
+
+Starter files you can edit directly:
+
+- [my-team.json](my-team.json)
+- [enemy-team.json](enemy-team.json)
+- [enemy-team-doubles.json](enemy-team-doubles.json)
+
+## Packaged app builds (no Node.js needed)
+
+If you download packaged artifacts from Releases, users do not need Node.js or npm.
+
+Recommended for most users: **portable runtime builds** (full app, including TUI).
+
+Portable artifact layout:
+
+- `portable-<platform>-<arch>/`
+- launcher files: `poke-engine`, `poke-engine.cmd`, `poke-engine.ps1`
+- bundled runtime + app files
+
+Nightly builds:
+
+- A nightly workflow publishes fresh portable artifacts in GitHub Actions:
+	- `.github/workflows/nightly-portable-builds.yml`
+
+Run examples after download (portable build):
+
+- macOS / Linux:
+	- `chmod +x ./poke-engine`
+	- `./poke-engine --tui`
+- Windows:
+	- `poke-engine.cmd --tui`
+
+Alternative: single-file binaries (CLI-focused):
+
+Expected artifacts:
+
+- Windows: `poke-engine-win-x64.exe`
+- macOS Intel: `poke-engine-macos-x64`
+- macOS Apple Silicon: `poke-engine-macos-arm64`
+- Linux x64: `poke-engine-linux-x64`
+
+Run examples after download:
+
+- Windows:
+	- `./poke-engine-win-x64.exe --my=my-team.json --enemy=enemy-team.json --json`
+- macOS / Linux:
+	- `chmod +x ./poke-engine-macos-arm64`
+	- `./poke-engine-macos-arm64 --my=my-team.json --enemy=enemy-team.json --json`
+
+Current limitation:
+
+- Packaged binaries currently support file-driven CLI execution.
+- TUI mode (`--tui`) is not enabled in packaged binaries yet.
+- Use portable runtime builds for packaged TUI usage.
+
+For maintainers building local binaries:
+
+```bash
+npm run package:portable
+npm run package:bin:linux-x64
+npm run package:bin:macos-x64
+npm run package:bin:macos-arm64
+npm run package:bin:win-x64
+```
+
+Build all targets:
+
+```bash
+npm run package:bin:all
 ```
 
 ## Validation

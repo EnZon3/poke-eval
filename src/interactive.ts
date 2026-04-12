@@ -1,9 +1,8 @@
+import { createInterface } from 'node:readline';
 import type { CliResult, DataSource, EvaluationOptions, PokemonSet, TrainerSource } from './types.js';
-import { runInkTUI } from './tui/index.js';
 
 export async function promptForTeam(): Promise<PokemonSet[]> {
-	const readline = await import('node:readline');
-	const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+	const rl = createInterface({ input: process.stdin, output: process.stdout });
 	const ask = (q: string) => new Promise<string>(resolve => {
 		const border = '─'.repeat(q.length + 2);
 		console.log('┌' + border + '┐');
@@ -83,5 +82,6 @@ export interface TuiDefaults {
 }
 
 export async function runTUI(defaults: TuiDefaults = {}): Promise<void> {
+	const { runInkTUI } = await import('./tui/index.js');
 	await runInkTUI(defaults);
 }
