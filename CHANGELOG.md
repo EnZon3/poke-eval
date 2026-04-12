@@ -18,10 +18,10 @@ The format is based on Keep a Changelog and this project follows Semantic Versio
 ### Removed
 - _None yet_
 
-## [0.1.0-rc.1] - 2026-04-11
+## [1.0.0] - 2026-04-11
 
 ### Added
-- Initial public pre-release candidate.
+- Initial public stable release.
 - Validation workflow scripts and CI checks.
 - Mechanics and accuracy verification documentation.
 - Modularized evaluation and TUI code organization.

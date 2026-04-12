@@ -4,10 +4,29 @@ This document defines the minimum release hygiene for `poke-engine`.
 
 ## Release types
 
-- Pre-release: `vX.Y.Z-rc.N`
 - Stable release: `vX.Y.Z`
+- Nightly pre-release: `nightly-vX.Y.Z-YYYYMMDD.RUN.ATTEMPT`
 
-## Pre-release checklist
+## Versioning policy
+
+Use `MAJOR.MINOR.PATCH` for stable releases.
+
+- `MAJOR` bump (`X+1.0.0`) when:
+   - public CLI flags/behavior are removed or changed incompatibly
+   - exported API contracts/types change in a breaking way
+   - team JSON schema expectations change incompatibly
+
+- `MINOR` bump (`X.Y+1.0`) when:
+   - new backward-compatible features are added (new CLI flags, new outputs, new supported mechanics)
+   - packaging/distribution capability is added without breaking existing usage
+
+- `PATCH` bump (`X.Y.Z+1`) when:
+   - bug fixes are backward-compatible
+   - accuracy tuning, docs fixes, and internal refactors do not change public contracts
+
+Pre-release/nightly tags do not replace stable SemVer tags; they are for preview and automation channels.
+
+## Release checklist
 
 1. Validation is green
    - `npm run validate:all`
@@ -26,12 +45,11 @@ This document defines the minimum release hygiene for `poke-engine`.
 
 ## Tagging convention
 
-- Pre-release:
-  - `git tag v0.1.0-rc.1`
-  - `git push origin v0.1.0-rc.1`
 - Stable:
-  - `git tag v0.1.0`
-  - `git push origin v0.1.0`
+   - `git tag v1.0.0`
+   - `git push origin v1.0.0`
+- Nightly (automated):
+   - published by `.github/workflows/nightly-portable-builds.yml`
 
 ## Post-release hygiene
 
