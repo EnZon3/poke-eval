@@ -1,11 +1,12 @@
 import { readFileSync } from 'node:fs';
+import { parseTeamInput } from '../team-import.js';
 import type { PokemonSet, Stats } from '../types.js';
 import { createDefaultPokemonSet, type EditorField } from './model.js';
 
 export function teamFromDefaults(filePath?: string): PokemonSet[] {
 	if (!filePath) return [createDefaultPokemonSet()];
 	try {
-		const parsed = JSON.parse(readFileSync(filePath, 'utf8')) as PokemonSet[];
+		const parsed = parseTeamInput(readFileSync(filePath, 'utf8'));
 		if (Array.isArray(parsed) && parsed.length > 0) return parsed;
 	} catch {
 		// ignore and fallback
@@ -92,6 +93,7 @@ export function getFieldValue(field: EditorField, mon: PokemonSet): string {
 		case 'nature': return mon.nature;
 		case 'ability': return mon.ability ?? '';
 		case 'item': return mon.item ?? '';
+		case 'megaForm': return mon.megaForm ?? '';
 		case 'teraType': return mon.teraType ?? '';
 		case 'dynamax': return mon.dynamax ? 'true' : 'false';
 		case 'status': return mon.status ?? '';
@@ -113,6 +115,7 @@ export function updateFieldValue(mon: PokemonSet, field: EditorField, value: str
 		case 'nature': target.nature = value.trim() || 'Serious'; break;
 		case 'ability': target.ability = value.trim() || undefined; break;
 		case 'item': target.item = value.trim() || undefined; break;
+		case 'megaForm': target.megaForm = value.trim() || undefined; break;
 		case 'teraType': target.teraType = value.trim() || undefined; break;
 		case 'dynamax': target.dynamax = ['true', 'yes', 'y', '1'].includes(value.trim().toLowerCase()); break;
 		case 'status': {

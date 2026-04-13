@@ -26,6 +26,28 @@ export function buildSetupQuestions(
 			],
 		},
 		{
+			id: 'mechanicsPolicy',
+			label: 'Battle gimmicks policy (Mega / Dynamax / Tera)',
+			kind: 'select',
+			value: setup.mechanicsPolicy,
+			setValue: v => setSetup((prev) => ({ ...prev, mechanicsPolicy: v === 'disable-all' ? 'disable-all' : 'generation-default' })),
+			options: [
+				{ label: 'Default by generation (Gen6-7 Mega, Gen8 Dynamax, Gen9 Tera)', value: 'generation-default' },
+				{ label: 'Disable all battle gimmicks (no Mega / Dynamax / Tera)', value: 'disable-all' },
+			],
+		},
+		{
+			id: 'gimmickControl',
+			label: 'Gimmick timing control',
+			kind: 'select',
+			value: setup.gimmickControl,
+			setValue: v => setSetup((prev) => ({ ...prev, gimmickControl: v === 'auto' ? 'auto' : 'manual' })),
+			options: [
+				{ label: 'Manual (use team flags directly: megaForm / teraType / dynamax)', value: 'manual' },
+				{ label: 'Auto (engine chooses timing; opponent assumes best response)', value: 'auto' },
+			],
+		},
+		{
 			id: 'mode',
 			label: 'Recommendation mode',
 			kind: 'select',
@@ -56,7 +78,7 @@ export function buildSetupQuestions(
 			setValue: v => setSetup((prev) => ({ ...prev, mySource: v === 'json' ? 'json' : (v === 'save' ? 'save' : 'builder') })),
 			options: [
 				{ label: 'Build interactively (party builder)', value: 'builder' },
-				{ label: 'Load from JSON file', value: 'json' },
+				{ label: 'Load from team file (JSON or Showdown)', value: 'json' },
 				{ label: 'Load from save file (PKHeX)', value: 'save' },
 			],
 		},
@@ -65,7 +87,7 @@ export function buildSetupQuestions(
 	if (setup.mySource === 'json') {
 		questions.push({
 			id: 'myFile',
-			label: 'Path to your team JSON',
+			label: 'Path to your team file (.json or Showdown .txt)',
 			kind: 'text',
 			value: setup.myFile,
 			setValue: v => setSetup((prev) => ({ ...prev, myFile: v })),
@@ -91,7 +113,7 @@ export function buildSetupQuestions(
 		value: setup.enemySource,
 		setValue: v => setSetup((prev) => ({ ...prev, enemySource: v === 'trainer' ? 'trainer' : (v === 'builder' ? 'builder' : 'json') })),
 		options: [
-			{ label: 'Load opponent from JSON file', value: 'json' },
+			{ label: 'Load opponent from team file (JSON or Showdown)', value: 'json' },
 			{ label: 'Use trainer roster', value: 'trainer' },
 			{ label: 'Build opponent interactively', value: 'builder' },
 		],
@@ -100,7 +122,7 @@ export function buildSetupQuestions(
 	if (setup.enemySource === 'json') {
 		questions.push({
 			id: 'enemyFile',
-			label: 'Path to opponent team JSON',
+			label: 'Path to opponent team file (.json or Showdown .txt)',
 			kind: 'text',
 			value: setup.enemyFile,
 			setValue: v => setSetup((prev) => ({ ...prev, enemyFile: v })),

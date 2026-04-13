@@ -16,14 +16,22 @@ This document explains how battle mechanics are validated in `poke-engine`, what
 
 - `npm run validate:typecheck`
   - Static safety check for TypeScript changes.
+- `npm run validate:test`
+  - Deterministic test suite for focused behavioral checks.
 - `npm run validate:bench`
   - Scenario benchmark for singles + doubles ranking behavior.
 - `npm run validate:all`
-  - Runs both checks above in sequence.
+  - Runs typecheck + tests + benchmark checks in sequence.
 
 ### Manual spot checks
 
 For mechanics-sensitive changes (damage, speed, status, weather, setup), compare selected cases against at least one trusted external reference and record findings in PR notes.
+
+Latest benchmark spot-check report:
+
+- `docs/validation-reports/BENCHMARK_ACCURACY_SPOTCHECK_2026-04-12.md`
+- `docs/validation-reports/GIMMICKS_POLICY_BENCHMARK_VERIFICATION_2026-04-12.md`
+- `docs/validation-reports/GIMMICKS_IN_BATTLE_ACCURACY_2026-04-12.md`
 
 ## External references used
 

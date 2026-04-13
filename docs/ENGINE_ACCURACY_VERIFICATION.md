@@ -4,6 +4,10 @@ Last updated: April 2026
 
 This guide is for contributors who want to validate and improve battle-mechanics accuracy.
 
+Before starting mechanics-sensitive code changes, read:
+
+- `docs/MECHANICS_CHANGE_PROTOCOL.md`
+
 ## Objective
 
 Provide a repeatable workflow to:

@@ -5,6 +5,7 @@ import { applyEstimatedSpread } from '../estimation.js';
 import { evaluateTeams } from '../evaluation/index.js';
 import type { TuiDefaults } from '../interactive.js';
 import { loadTeamFromSaveFile } from '../save-import.js';
+import { parseTeamInput } from '../team-import.js';
 import { fetchTrainerTeamFromSource } from '../trainers.js';
 import type { CliResult, EvaluationOptions, PokemonSet } from '../types.js';
 import { parseGeneration } from '../utils.js';
@@ -21,10 +22,14 @@ export function InkTuiApp({ defaults }: { defaults: TuiDefaults }): React.JSX.El
 	const [statusMsg, setStatusMsg] = useState('');
 	const [results, setResults] = useState<CliResult | null>(null);
 	const [showHelpFullscreen, setShowHelpFullscreen] = useState(false);
+	const [selectedResultIndex, setSelectedResultIndex] = useState(0);
+	const [expandedEnemyKey, setExpandedEnemyKey] = useState<string | null>(null);
 
 	const [setup, setSetup] = useState<SetupState>({
 		genInput: defaults.gen ? String(defaults.gen) : '',
 		battleFormat: defaults.evaluationOptions?.battleFormat ?? 'singles',
+		mechanicsPolicy: defaults.evaluationOptions?.mechanicsPolicy ?? 'generation-default',
+		gimmickControl: defaults.evaluationOptions?.gimmickControl ?? 'manual',
 		mode: defaults.evaluationOptions?.mode ?? 'casual',
 		dataSource: defaults.dataSource ?? 'showdown',
 		mySource: defaults.mySaveFile ? 'save' : (defaults.myFile ? 'json' : 'builder'),
@@ -60,10 +65,13 @@ export function InkTuiApp({ defaults }: { defaults: TuiDefaults }): React.JSX.El
 		opponentRiskWeight: 0.5,
 		...defaults.evaluationOptions,
 		battleFormat: setup.battleFormat,
+		mechanicsPolicy: setup.mechanicsPolicy,
+		gimmickControl: setup.gimmickControl,
 		mode: setup.mode,
 	};
 
 	const setupQuestions = useMemo(() => buildSetupQuestions(setup, setSetup), [setup]);
+	const resultEnemyKeys = useMemo(() => Object.keys(results ?? {}), [results]);
 
 	const activeQuestion = setupQuestions[Math.min(setupIndex, setupQuestions.length - 1)];
 	const selectedPokemon = editingSide === 'my' ? selectedMyPokemon : selectedEnemyPokemon;
@@ -97,6 +105,8 @@ export function InkTuiApp({ defaults }: { defaults: TuiDefaults }): React.JSX.El
 		try {
 			const r = evaluateTeams(myTeam, enemyTeam, evaluationOptions);
 			setResults(r);
+			setSelectedResultIndex(0);
+			setExpandedEnemyKey(null);
 			setPhase('results');
 			setStatusMsg('Calculation complete.');
 		} catch (err) {
@@ -116,13 +126,13 @@ export function InkTuiApp({ defaults }: { defaults: TuiDefaults }): React.JSX.El
 			await loadData(gen, setup.dataSource);
 			if (setup.mySource === 'json') {
 				const fs = await import('node:fs');
-				setMyTeam(JSON.parse(fs.readFileSync(setup.myFile, 'utf8')) as PokemonSet[]);
+				setMyTeam(parseTeamInput(fs.readFileSync(setup.myFile, 'utf8')));
 			} else if (setup.mySource === 'save') {
 				setMyTeam(await loadTeamFromSaveFile(setup.mySaveFile));
 			}
 			if (setup.enemySource === 'json') {
 				const fs = await import('node:fs');
-				setEnemyTeam(JSON.parse(fs.readFileSync(setup.enemyFile, 'utf8')) as PokemonSet[]);
+				setEnemyTeam(parseTeamInput(fs.readFileSync(setup.enemyFile, 'utf8')));
 			} else if (setup.enemySource === 'trainer') {
 				const team = await fetchTrainerTeamFromSource(setup.trainerSource, setup.game, setup.trainerName);
 				setEnemyTeam(team);
@@ -262,6 +272,19 @@ export function InkTuiApp({ defaults }: { defaults: TuiDefaults }): React.JSX.El
 				exit();
 				return;
 			}
+			if ((key.leftArrow || key.upArrow) && resultEnemyKeys.length > 0) {
+				setSelectedResultIndex((v) => Math.max(0, v - 1));
+				return;
+			}
+			if ((key.rightArrow || key.downArrow) && resultEnemyKeys.length > 0) {
+				setSelectedResultIndex((v) => Math.min(resultEnemyKeys.length - 1, v + 1));
+				return;
+			}
+			if ((key.return || input === 'e') && resultEnemyKeys.length > 0) {
+				const selectedEnemy = resultEnemyKeys[Math.max(0, Math.min(selectedResultIndex, resultEnemyKeys.length - 1))];
+				setExpandedEnemyKey((v) => (v === selectedEnemy ? null : selectedEnemy));
+				return;
+			}
 			if (input === 'h') {
 				setShowHelpFullscreen(v => !v);
 			}
@@ -314,5 +337,12 @@ export function InkTuiApp({ defaults }: { defaults: TuiDefaults }): React.JSX.El
 	}
 
 	if (showHelpFullscreen) return <HelpView />;
-	return <ResultsView results={results} error={error} />;
+	return (
+		<ResultsView
+			results={results}
+			error={error}
+			selectedIndex={Math.max(0, Math.min(selectedResultIndex, Math.max(0, resultEnemyKeys.length - 1)))}
+			expandedEnemyKey={expandedEnemyKey}
+		/>
+	);
 }

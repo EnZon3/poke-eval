@@ -26,6 +26,7 @@ export async function promptForTeam(): Promise<PokemonSet[]> {
 		const nature = (await ask(`Nature for ${species} (default Serious)`)).trim() || 'Serious';
 		const abilityInput = (await ask(`Ability for ${species} (optional)`)).trim();
 		const itemInput = (await ask(`Item for ${species} (optional)`)).trim();
+		const megaInput = (await ask(`Mega form for ${species} (optional, e.g. Mega, Mega-X)`)).trim();
 		const teraInput = (await ask(`Tera type for ${species} (leave blank if none)`)).trim();
 		const dynInput = (await ask(`Dynamax ${species}? (y/n, default n)`)).trim().toLowerCase();
 		const movesInput = (await ask(`Moves for ${species} (comma separated, up to 4)`)).trim();
@@ -36,6 +37,7 @@ export async function promptForTeam(): Promise<PokemonSet[]> {
 			nature,
 			ability: abilityInput || undefined,
 			item: itemInput || undefined,
+			megaForm: megaInput || undefined,
 			teraType: teraInput || undefined,
 			dynamax: dynInput === 'y' || dynInput === 'yes',
 			ivs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },

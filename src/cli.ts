@@ -3,6 +3,7 @@ import { loadData } from './data.js';
 import { evaluateTeams } from './evaluation/index.js';
 import { promptForTeam, printResultsPretty, runTUI } from './interactive.js';
 import { loadTeamFromSaveFile } from './save-import.js';
+import { parseTeamInput } from './team-import.js';
 import { fetchTrainerTeamFromSource } from './trainers.js';
 import type { DataSource, EvaluationOptions, PokemonSet, TrainerSource } from './types.js';
 import {
@@ -179,6 +180,7 @@ export async function runCli(): Promise<void> {
 	if (showHelp) {
 		console.log('Usage:');
 		console.log('  npm start -- --my=my-team.json --enemy=enemy-team.json [--gen=sv]');
+		console.log('  npm start -- --my=my-team.txt --enemy=enemy-team.txt [--gen=sv]');
 		console.log('  npm start -- --my=my-team.json --enemy-builder');
 		console.log('  npm start -- --my=my-team.json --enemy=enemy-team.json --format=doubles');
 		console.log('  npm start -- --my=my-team.json --enemy=enemy-team.json --format=singles');
@@ -208,18 +210,18 @@ export async function runCli(): Promise<void> {
 	} else if (!myFile) {
 		myTeam = await promptForTeam();
 	} else {
-		myTeam = JSON.parse(readFileSync(myFile, 'utf8'));
+		myTeam = parseTeamInput(readFileSync(myFile, 'utf8'));
 	}
 
 	let enemyTeam: PokemonSet[];
 	if (trainerName && game) {
 		enemyTeam = await fetchTrainerTeamFromSource(trainerSource, game, trainerName);
 	} else if (enemyFile) {
-		enemyTeam = JSON.parse(readFileSync(enemyFile, 'utf8'));
+		enemyTeam = parseTeamInput(readFileSync(enemyFile, 'utf8'));
 	} else if (enemyBuilder) {
 		enemyTeam = await promptForTeam();
 	} else {
-		throw new Error('You must specify either --trainer and --game, provide an enemy JSON file via --enemy, or use --enemy-builder');
+		throw new Error('You must specify either --trainer and --game, provide an enemy team file via --enemy (JSON or Showdown text), or use --enemy-builder');
 	}
 
 	const result = evaluateTeams(myTeam, enemyTeam, evaluationOptions);

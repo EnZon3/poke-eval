@@ -4,7 +4,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![License: AGPL](https://img.shields.io/badge/License-AGPLv3-blue.svg)](https://opensource.org/licenses/AGPL-3.0)
 
-A TypeScript Pokémon matchup engine for ranking team-vs-team options from JSON teams, PKHeX-compatible save files, named trainers, or an interactive terminal UI.
+A TypeScript Pokémon matchup engine for ranking team-vs-team options from JSON teams, Showdown export text, PKHeX-compatible save files, named trainers, or an interactive terminal UI.
 
 Designed for practical matchup planning: fast enough for iteration, detailed enough for actionable decisions.
 
@@ -80,7 +80,7 @@ npm install
 npm start -- --tui
 ```
 
-4. In setup, choose your sources (JSON/save/trainer) and select `doubles` or `singles`.
+4. In setup, choose your sources (team file: JSON/Showdown, save, trainer) and select `doubles` or `singles`.
 5. In editor, press `c` to calculate.
 6. In results, press `h` for help and `b` to go back and edit.
 
@@ -168,11 +168,12 @@ Run local quality gates before pushing changes:
 
 ```bash
 npm run validate:typecheck
+npm run validate:test
 npm run validate:bench
 npm run validate:all
 ```
 
-`validate:all` runs typecheck + benchmark validations.
+`validate:all` runs typecheck + tests + benchmark validations.
 
 ## Quick usage
 
@@ -182,6 +183,12 @@ Team JSON vs team JSON:
 
 ```bash
 npm start -- --my=my-team.json --enemy=enemy-team.json
+```
+
+Showdown export text vs Showdown export text:
+
+```bash
+npm start -- --my=my-team.txt --enemy=enemy-team.txt
 ```
 
 Team JSON vs named trainer:
@@ -206,9 +213,9 @@ npm start -- --tui
 
 ### Core inputs
 
-- `--my=<path>` your team JSON
+- `--my=<path>` your team file (JSON array or Showdown export text)
 - `--my-save=<path>` your team from PKHeX-compatible save file
-- `--enemy=<path>` enemy team JSON
+- `--enemy=<path>` enemy team file (JSON array or Showdown export text)
 - `--enemy-builder` build enemy team interactively
 - `--game=<id>` + `--trainer=<name>` load trainer team
 - `--against-trainer=<game>:<trainer>` shorthand
@@ -271,12 +278,23 @@ Setup phase:
 - `Enter`: next/confirm
 - `Esc` or `Ctrl+C`: exit
 
+Setup includes a battle-gimmicks policy prompt:
+
+- `Default by generation`: Gen 6-7 Mega, Gen 8 Dynamax, Gen 9 Tera
+- `Disable all`: disables Mega Evolution, Dynamax, and Terastallization in evaluation
+
+Setup also includes a gimmick timing control prompt:
+
+- `Manual`: uses team-set gimmick flags directly (`megaForm` / `teraType` / `dynamax`)
+- `Auto`: engine chooses timing and evaluates against opponent best-response gimmick branches
+
 Editor phase:
 
 - `Arrow keys`: navigate selection
 - `e`: edit selected field
 - `Enter`: commit edit
 - `Esc`: cancel edit
+- `o`: toggle editing side (your team / enemy team)
 - `a`: add slot
 - `x`: delete slot
 - `p`: estimate IV/EV
@@ -287,6 +305,7 @@ Editor phase:
 Results/help phase:
 
 - `h`: open/close fullscreen help
+- `m`: close fullscreen help
 - `b`: back to editor
 - `r`: recompute
 - `q` or `Ctrl+C`: quit
@@ -303,6 +322,7 @@ Each team is an array of `PokemonSet` records.
 		"nature": "Jolly",
 		"ability": "Rough Skin",
 		"item": "Choice Scarf",
+		"megaForm": "Mega",
 		"teraType": "Ground",
 		"dynamax": false,
 		"status": null,
@@ -313,6 +333,12 @@ Each team is an array of `PokemonSet` records.
 	}
 ]
 ```
+
+Mechanics gating is generation-aware during build/evaluation:
+
+- `megaForm` is only applied when loaded generation is Gen 6-7.
+- `dynamax` is only applied when loaded generation is Gen 8.
+- `teraType` is only applied when loaded generation is Gen 9.
 
 Canonical type definition: [src/types.ts](src/types.ts)
 

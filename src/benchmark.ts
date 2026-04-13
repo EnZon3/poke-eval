@@ -33,11 +33,22 @@ function line(width = 72): string {
 type Scenario = {
 	name: string;
 	format: 'singles' | 'doubles';
+	gen?: number;
+	mechanicsPolicy?: EvaluationOptions['mechanicsPolicy'];
 	myTeam: PokemonSet[];
 	enemy: PokemonSet[];
 	enemyKey: string;
 	expectedTop3Contains: string[];
 	sourceNote: string;
+	scoreTolerance?: {
+		minTop1Score?: number;
+		maxTop1Score?: number;
+	};
+	doublesScoreTolerance?: {
+		minTop1Score?: number;
+		minTop1VsTop2Gap?: number;
+		minTop1VsTop3Gap?: number;
+	};
 };
 
 // Singles benchmark team (ADV-oriented).
@@ -172,6 +183,7 @@ const scenarios: Scenario[] = [
 	{
 		name: 'Skarmory pressure check',
 		format: 'singles',
+		gen: 3,
 		myTeam: mySinglesTeam,
 		enemy: [{
 			species: 'Skarmory',
@@ -190,6 +202,7 @@ const scenarios: Scenario[] = [
 	{
 		name: 'Blissey breaker check',
 		format: 'singles',
+		gen: 3,
 		myTeam: mySinglesTeam,
 		enemy: [{
 			species: 'Blissey',
@@ -208,6 +221,7 @@ const scenarios: Scenario[] = [
 	{
 		name: 'Tyranitar counter check',
 		format: 'singles',
+		gen: 3,
 		myTeam: mySinglesTeam,
 		enemy: [{
 			species: 'Tyranitar',
@@ -226,6 +240,7 @@ const scenarios: Scenario[] = [
 	{
 		name: 'Aerodactyl anti-air check',
 		format: 'singles',
+		gen: 3,
 		myTeam: mySinglesTeam,
 		enemy: [{
 			species: 'Aerodactyl',
@@ -244,6 +259,7 @@ const scenarios: Scenario[] = [
 	{
 		name: 'Salamence anti-Dragon check',
 		format: 'singles',
+		gen: 3,
 		myTeam: mySinglesTeam,
 		enemy: [{
 			species: 'Salamence',
@@ -262,6 +278,7 @@ const scenarios: Scenario[] = [
 	{
 		name: 'VGC lead pressure: Heatran + Landorus-T',
 		format: 'doubles',
+		gen: 9,
 		myTeam: myDoublesTeam,
 		enemy: [
 			{
@@ -288,10 +305,12 @@ const scenarios: Scenario[] = [
 		enemyKey: 'Heatran + Landorus-Therian',
 		expectedTop3Contains: ['Rillaboom + Urshifu-Rapid-Strike'],
 		sourceNote: 'VGC consensus emphasizes Water/Fighting pressure and speed control utility into this Fire/Ground-oriented lead shell.',
+		doublesScoreTolerance: { minTop1Score: 0.05, minTop1VsTop2Gap: 0.005 },
 	},
 	{
 		name: 'VGC lead pressure: Incineroar + Rillaboom',
 		format: 'doubles',
+		gen: 9,
 		myTeam: myDoublesTeam,
 		enemy: [
 			{
@@ -318,10 +337,12 @@ const scenarios: Scenario[] = [
 		enemyKey: 'Incineroar + Rillaboom',
 		expectedTop3Contains: ['Flutter Mane + Landorus-Therian'],
 		sourceNote: 'VGC play patterns often answer Incineroar/Rillaboom with strong Ground/Fairy pressure and speed utility to avoid Fake Out loops.',
+		doublesScoreTolerance: { minTop1Score: 0.05, minTop1VsTop2Gap: 0.005 },
 	},
 	{
 		name: 'VGC speed-control check: Urshifu-RS + Flutter Mane',
 		format: 'doubles',
+		gen: 9,
 		myTeam: myDoublesTeam,
 		enemy: [
 			{
@@ -348,27 +369,647 @@ const scenarios: Scenario[] = [
 		enemyKey: 'Urshifu-Rapid-Strike + Flutter Mane',
 		expectedTop3Contains: ['Incineroar + Amoonguss'],
 		sourceNote: 'VGC resources repeatedly stress speed control + redirection + Fake Out as practical tools against fast pressure leads.',
+		doublesScoreTolerance: { minTop1Score: 0.05, minTop1VsTop2Gap: 0.005 },
+	},
+	{
+		name: 'VGC Tailwind lead check: Whimsicott + Gholdengo',
+		format: 'doubles',
+		gen: 9,
+		myTeam: myDoublesTeam,
+		enemy: [
+			{
+				species: 'Whimsicott',
+				level: 50,
+				nature: 'Timid',
+				ability: 'Prankster',
+				item: 'Focus Sash',
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 4, atk: 0, def: 0, spa: 252, spd: 0, spe: 252 },
+				moves: ['Tailwind', 'Moonblast', 'Encore', 'Protect'],
+			},
+			{
+				species: 'Gholdengo',
+				level: 50,
+				nature: 'Timid',
+				ability: 'Good as Gold',
+				item: 'Choice Specs',
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 4, atk: 0, def: 0, spa: 252, spd: 0, spe: 252 },
+				moves: ['Make It Rain', 'Shadow Ball', 'Trick', 'Protect'],
+			},
+		],
+		enemyKey: 'Whimsicott + Gholdengo',
+		expectedTop3Contains: ['Incineroar + Flutter Mane'],
+		sourceNote: 'Tailwind + strong spread/special pressure is a staple lead pattern; practical responses favor immediate disruption plus counter-pressure.',
+		doublesScoreTolerance: { minTop1Score: 0.05, minTop1VsTop2Gap: 0.005 },
+	},
+	{
+		name: 'VGC Trick Room lead check: Cresselia + Ursaluna',
+		format: 'doubles',
+		gen: 9,
+		myTeam: myDoublesTeam,
+		enemy: [
+			{
+				species: 'Cresselia',
+				level: 50,
+				nature: 'Calm',
+				ability: 'Levitate',
+				item: 'Mental Herb',
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 252, atk: 0, def: 156, spa: 0, spd: 100, spe: 0 },
+				moves: ['Trick Room', 'Lunar Blessing', 'Ice Beam', 'Helping Hand'],
+			},
+			{
+				species: 'Ursaluna',
+				level: 50,
+				nature: 'Brave',
+				ability: 'Guts',
+				item: 'Flame Orb',
+				ivs: { hp: 31, atk: 31, def: 31, spa: 0, spd: 31, spe: 0 },
+				evs: { hp: 188, atk: 252, def: 0, spa: 0, spd: 68, spe: 0 },
+				moves: ['Facade', 'Headlong Rush', 'Protect', 'Swords Dance'],
+			},
+		],
+		enemyKey: 'Cresselia + Ursaluna',
+		expectedTop3Contains: ['Rillaboom + Amoonguss'],
+		sourceNote: 'Trick Room setup leads are commonly answered with disruption and defensive tempo tools that can survive and stall key turns.',
+		doublesScoreTolerance: { minTop1Score: 0.05, minTop1VsTop2Gap: 0.005 },
+	},
+	{
+		name: 'VGC redirection + setup check: Amoonguss + Volcarona',
+		format: 'doubles',
+		gen: 9,
+		myTeam: myDoublesTeam,
+		enemy: [
+			{
+				species: 'Amoonguss',
+				level: 50,
+				nature: 'Calm',
+				ability: 'Regenerator',
+				item: 'Sitrus Berry',
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 0 },
+				evs: { hp: 236, atk: 0, def: 156, spa: 4, spd: 108, spe: 4 },
+				moves: ['Rage Powder', 'Spore', 'Pollen Puff', 'Protect'],
+			},
+			{
+				species: 'Volcarona',
+				level: 50,
+				nature: 'Timid',
+				ability: 'Flame Body',
+				item: 'Sitrus Berry',
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 164, atk: 0, def: 4, spa: 236, spd: 4, spe: 100 },
+				moves: ['Quiver Dance', 'Heat Wave', 'Bug Buzz', 'Protect'],
+			},
+		],
+		enemyKey: 'Amoonguss + Volcarona',
+		expectedTop3Contains: ['Incineroar + Landorus-Therian'],
+		sourceNote: 'Redirection + setup lead shells reward lines that pressure setup turns while preserving board control and pivot options.',
+		doublesScoreTolerance: { minTop1Score: 0.05, minTop1VsTop2Gap: 0.005 },
+	},
+	{
+		name: 'VGC weather lead check: Pelipper + Archaludon',
+		format: 'doubles',
+		gen: 9,
+		myTeam: myDoublesTeam,
+		enemy: [
+			{
+				species: 'Pelipper',
+				level: 50,
+				nature: 'Bold',
+				ability: 'Drizzle',
+				item: 'Focus Sash',
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 252, atk: 0, def: 196, spa: 0, spd: 60, spe: 0 },
+				moves: ['Tailwind', 'Hurricane', 'Weather Ball', 'Protect'],
+			},
+			{
+				species: 'Archaludon',
+				level: 50,
+				nature: 'Modest',
+				ability: 'Stamina',
+				item: 'Assault Vest',
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 252, atk: 0, def: 4, spa: 188, spd: 60, spe: 4 },
+				moves: ['Electro Shot', 'Flash Cannon', 'Draco Meteor', 'Snarl'],
+			},
+		],
+		enemyKey: 'Pelipper + Archaludon',
+		expectedTop3Contains: ['Rillaboom + Amoonguss'],
+		sourceNote: 'Rain-oriented leads are commonly checked by weather-aware pressure plus terrain and priority utility for tempo control.',
+		doublesScoreTolerance: { minTop1Score: 0.05, minTop1VsTop2Gap: 0.005 },
+	},
+	{
+		name: 'VGC Intimidate pivot lead check: Incineroar + Landorus-T',
+		format: 'doubles',
+		gen: 9,
+		myTeam: myDoublesTeam,
+		enemy: [
+			{
+				species: 'Incineroar',
+				level: 50,
+				nature: 'Careful',
+				ability: 'Intimidate',
+				item: 'Sitrus Berry',
+				ivs: { hp: 31, atk: 31, def: 31, spa: 0, spd: 31, spe: 31 },
+				evs: { hp: 252, atk: 44, def: 4, spa: 0, spd: 180, spe: 28 },
+				moves: ['Fake Out', 'Parting Shot', 'Flare Blitz', 'Knock Off'],
+			},
+			{
+				species: 'Landorus-Therian',
+				level: 50,
+				nature: 'Jolly',
+				ability: 'Intimidate',
+				item: 'Choice Scarf',
+				ivs: { hp: 31, atk: 31, def: 31, spa: 0, spd: 31, spe: 31 },
+				evs: { hp: 4, atk: 252, def: 0, spa: 0, spd: 0, spe: 252 },
+				moves: ['U-turn', 'Rock Slide', 'Stomping Tantrum', 'Tera Blast'],
+			},
+		],
+		enemyKey: 'Incineroar + Landorus-Therian',
+		expectedTop3Contains: ['Urshifu-Rapid-Strike + Landorus-Therian'],
+		sourceNote: 'Double-Intimidate pivot leads are typically punished by strong special or crit-leaning pressure that resists attack-drop loops.',
+		doublesScoreTolerance: { minTop1Score: 0.05, minTop1VsTop2Gap: 0.005 },
+	},
+	{
+		name: 'Mechanics policy: Mega enabled by generation (Gen 6)',
+		format: 'singles',
+		gen: 6,
+		mechanicsPolicy: 'generation-default',
+		myTeam: [
+			{
+				species: 'Charizard',
+				level: 50,
+				nature: 'Jolly',
+				ability: 'Blaze',
+				item: 'Charizardite X',
+				megaForm: 'Mega-X',
+				ivs: { hp: 31, atk: 31, def: 31, spa: 0, spd: 31, spe: 31 },
+				evs: { hp: 0, atk: 252, def: 0, spa: 0, spd: 4, spe: 252 },
+				moves: ['Flare Blitz', 'Dragon Claw', 'Earthquake', 'Roost'],
+			},
+		],
+		enemy: [
+			{
+				species: 'Venusaur',
+				level: 50,
+				nature: 'Bold',
+				ability: 'Overgrow',
+				item: 'Black Sludge',
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 4, spe: 0 },
+				moves: ['Sludge Bomb', 'Giga Drain', 'Leech Seed', 'Protect'],
+			},
+		],
+		enemyKey: 'Venusaur',
+		expectedTop3Contains: ['Charizard-Mega-X'],
+		sourceNote: 'Pokémon Showdown battle logic (`runMegaEvo`) and simulator tests confirm Mega Evolution applies in-battle in Gen 6+ and changes form/stat profile.',
+	},
+	{
+		name: 'Mechanics policy: Mega disabled via option (Gen 6)',
+		format: 'singles',
+		gen: 6,
+		mechanicsPolicy: 'disable-all',
+		myTeam: [
+			{
+				species: 'Charizard',
+				level: 50,
+				nature: 'Jolly',
+				ability: 'Blaze',
+				item: 'Charizardite X',
+				megaForm: 'Mega-X',
+				ivs: { hp: 31, atk: 31, def: 31, spa: 0, spd: 31, spe: 31 },
+				evs: { hp: 0, atk: 252, def: 0, spa: 0, spd: 4, spe: 252 },
+				moves: ['Flare Blitz', 'Dragon Claw', 'Earthquake', 'Roost'],
+			},
+		],
+		enemy: [
+			{
+				species: 'Venusaur',
+				level: 50,
+				nature: 'Bold',
+				ability: 'Overgrow',
+				item: 'Black Sludge',
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 4, spe: 0 },
+				moves: ['Sludge Bomb', 'Giga Drain', 'Leech Seed', 'Protect'],
+			},
+		],
+		enemyKey: 'Venusaur',
+		expectedTop3Contains: ['Charizard'],
+		sourceNote: 'Mechanics policy `disable-all` intentionally suppresses Mega conversion regardless of generation, for format/ruleset simulation flexibility.',
+	},
+	{
+		name: 'Mechanics policy: Dynamax enabled by generation (Gen 8)',
+		format: 'singles',
+		gen: 8,
+		mechanicsPolicy: 'generation-default',
+		myTeam: [
+			{
+				species: 'Alakazam',
+				level: 50,
+				nature: 'Timid',
+				ability: 'Magic Guard',
+				item: 'Life Orb',
+				dynamax: true,
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 4, atk: 0, def: 0, spa: 252, spd: 0, spe: 252 },
+				moves: ['Psybeam', 'Shadow Ball', 'Protect', 'Calm Mind'],
+			},
+		],
+		enemy: [
+			{
+				species: 'Umbreon',
+				level: 50,
+				nature: 'Calm',
+				ability: 'Synchronize',
+				item: 'Leftovers',
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 252, atk: 0, def: 4, spa: 0, spd: 252, spe: 0 },
+				moves: ['Foul Play', 'Snarl', 'Wish', 'Protect'],
+			},
+		],
+		enemyKey: 'Umbreon',
+		expectedTop3Contains: ['Alakazam'],
+		sourceNote: 'Showdown Dynamax implementation applies HP scaling and Max Move base-power conversion (Gen 8) for in-battle damage/survival impact.',
+		scoreTolerance: { minTop1Score: -0.75, maxTop1Score: -0.45 },
+	},
+	{
+		name: 'Mechanics policy: Dynamax disabled via option (Gen 8)',
+		format: 'singles',
+		gen: 8,
+		mechanicsPolicy: 'disable-all',
+		myTeam: [
+			{
+				species: 'Alakazam',
+				level: 50,
+				nature: 'Timid',
+				ability: 'Magic Guard',
+				item: 'Life Orb',
+				dynamax: true,
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 4, atk: 0, def: 0, spa: 252, spd: 0, spe: 252 },
+				moves: ['Psybeam', 'Shadow Ball', 'Protect', 'Calm Mind'],
+			},
+		],
+		enemy: [
+			{
+				species: 'Umbreon',
+				level: 50,
+				nature: 'Calm',
+				ability: 'Synchronize',
+				item: 'Leftovers',
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 252, atk: 0, def: 4, spa: 0, spd: 252, spe: 0 },
+				moves: ['Foul Play', 'Snarl', 'Wish', 'Protect'],
+			},
+		],
+		enemyKey: 'Umbreon',
+		expectedTop3Contains: ['Alakazam'],
+		sourceNote: 'Mechanics policy `disable-all` suppresses Dynamax effects; this scenario checks reduced pressure against the same target state.',
+		scoreTolerance: { maxTop1Score: -0.85 },
+	},
+	{
+		name: 'Mechanics policy: Terastallization enabled by generation (Gen 9)',
+		format: 'singles',
+		gen: 9,
+		mechanicsPolicy: 'generation-default',
+		myTeam: [
+			{
+				species: 'Gengar',
+				level: 50,
+				nature: 'Timid',
+				ability: 'Cursed Body',
+				item: 'Life Orb',
+				teraType: 'Electric',
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 4, atk: 0, def: 0, spa: 252, spd: 0, spe: 252 },
+				moves: ['Thunderbolt', 'Shadow Ball', 'Protect', 'Nasty Plot'],
+			},
+		],
+		enemy: [
+			{
+				species: 'Alomomola',
+				level: 50,
+				nature: 'Calm',
+				ability: 'Regenerator',
+				item: 'Leftovers',
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 252, atk: 0, def: 4, spa: 0, spd: 252, spe: 0 },
+				moves: ['Scald', 'Wish', 'Protect', 'Toxic'],
+			},
+		],
+		enemyKey: 'Alomomola',
+		expectedTop3Contains: ['Gengar'],
+		sourceNote: 'Showdown Terastallization logic and tests confirm tera-type offensive STAB and defensive type override in Gen 9 contexts.',
+		scoreTolerance: { minTop1Score: 0.9 },
+	},
+	{
+		name: 'Mechanics policy: Terastallization disabled via option (Gen 9)',
+		format: 'singles',
+		gen: 9,
+		mechanicsPolicy: 'disable-all',
+		myTeam: [
+			{
+				species: 'Gengar',
+				level: 50,
+				nature: 'Timid',
+				ability: 'Cursed Body',
+				item: 'Life Orb',
+				teraType: 'Electric',
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 4, atk: 0, def: 0, spa: 252, spd: 0, spe: 252 },
+				moves: ['Thunderbolt', 'Shadow Ball', 'Protect', 'Nasty Plot'],
+			},
+		],
+		enemy: [
+			{
+				species: 'Alomomola',
+				level: 50,
+				nature: 'Calm',
+				ability: 'Regenerator',
+				item: 'Leftovers',
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 252, atk: 0, def: 4, spa: 0, spd: 252, spe: 0 },
+				moves: ['Scald', 'Wish', 'Protect', 'Toxic'],
+			},
+		],
+		enemyKey: 'Alomomola',
+		expectedTop3Contains: ['Gengar'],
+		sourceNote: 'Mechanics policy `disable-all` suppresses Terastallization effects; this scenario checks lower pressure versus the same state.',
+		scoreTolerance: { maxTop1Score: 0.86 },
+	},
+	{
+		name: 'Edge gimmick: Tera defensive pivot enabled (Gen 9)',
+		format: 'singles',
+		gen: 9,
+		mechanicsPolicy: 'generation-default',
+		myTeam: [
+			{
+				species: 'Gyarados',
+				level: 50,
+				nature: 'Adamant',
+				ability: 'Intimidate',
+				item: 'Leftovers',
+				teraType: 'Ground',
+				ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 252, atk: 252, def: 0, spa: 0, spd: 4, spe: 0 },
+				moves: ['Waterfall', 'Earthquake', 'Dragon Dance', 'Protect'],
+			},
+		],
+		enemy: [
+			{
+				species: 'Pikachu',
+				level: 50,
+				nature: 'Timid',
+				ability: 'Static',
+				item: 'Light Ball',
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 4, atk: 0, def: 0, spa: 252, spd: 0, spe: 252 },
+				moves: ['Thunderbolt', 'Volt Switch', 'Nasty Plot', 'Protect'],
+			},
+		],
+		enemyKey: 'Pikachu',
+		expectedTop3Contains: ['Gyarados'],
+		sourceNote: 'Showdown Terastallization behavior applies defensive type override; Ground tera into Electric pressure is a canonical immunity pivot pattern.',
+		scoreTolerance: { minTop1Score: 0.95 },
+	},
+	{
+		name: 'Edge gimmick: Tera defensive pivot disabled (Gen 9)',
+		format: 'singles',
+		gen: 9,
+		mechanicsPolicy: 'disable-all',
+		myTeam: [
+			{
+				species: 'Gyarados',
+				level: 50,
+				nature: 'Adamant',
+				ability: 'Intimidate',
+				item: 'Leftovers',
+				teraType: 'Ground',
+				ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 252, atk: 252, def: 0, spa: 0, spd: 4, spe: 0 },
+				moves: ['Waterfall', 'Earthquake', 'Dragon Dance', 'Protect'],
+			},
+		],
+		enemy: [
+			{
+				species: 'Pikachu',
+				level: 50,
+				nature: 'Timid',
+				ability: 'Static',
+				item: 'Light Ball',
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 4, atk: 0, def: 0, spa: 252, spd: 0, spe: 252 },
+				moves: ['Thunderbolt', 'Volt Switch', 'Nasty Plot', 'Protect'],
+			},
+		],
+		enemyKey: 'Pikachu',
+		expectedTop3Contains: ['Gyarados'],
+		sourceNote: 'With gimmicks disabled, tera defensive conversion is suppressed and matchup reverts toward base-type defensive profile.',
+		scoreTolerance: { maxTop1Score: 0.1 },
+	},
+	{
+		name: 'Edge gimmick: Dynamax Fighting bucket enabled (Gen 8)',
+		format: 'singles',
+		gen: 8,
+		mechanicsPolicy: 'generation-default',
+		myTeam: [
+			{
+				species: 'Conkeldurr',
+				level: 50,
+				nature: 'Adamant',
+				ability: 'Guts',
+				item: 'Leftovers',
+				dynamax: true,
+				ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 252, atk: 252, def: 0, spa: 0, spd: 4, spe: 0 },
+				moves: ['Brick Break', 'Knock Off', 'Mach Punch', 'Protect'],
+			},
+		],
+		enemy: [
+			{
+				species: 'Tyranitar',
+				level: 50,
+				nature: 'Adamant',
+				ability: 'Sand Stream',
+				item: 'Leftovers',
+				ivs: { hp: 31, atk: 31, def: 31, spa: 0, spd: 31, spe: 31 },
+				evs: { hp: 252, atk: 252, def: 0, spa: 0, spd: 4, spe: 0 },
+				moves: ['Rock Slide', 'Crunch', 'Low Kick', 'Protect'],
+			},
+		],
+		enemyKey: 'Tyranitar',
+		expectedTop3Contains: ['Conkeldurr'],
+		sourceNote: 'Showdown Dynamax move mapping uses lower Max Move BP tables for Fighting/Poison than other attacking types.',
+		scoreTolerance: { minTop1Score: 1.15 },
+	},
+	{
+		name: 'Edge gimmick: Dynamax Fighting bucket disabled (Gen 8)',
+		format: 'singles',
+		gen: 8,
+		mechanicsPolicy: 'disable-all',
+		myTeam: [
+			{
+				species: 'Conkeldurr',
+				level: 50,
+				nature: 'Adamant',
+				ability: 'Guts',
+				item: 'Leftovers',
+				dynamax: true,
+				ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 252, atk: 252, def: 0, spa: 0, spd: 4, spe: 0 },
+				moves: ['Brick Break', 'Knock Off', 'Mach Punch', 'Protect'],
+			},
+		],
+		enemy: [
+			{
+				species: 'Tyranitar',
+				level: 50,
+				nature: 'Adamant',
+				ability: 'Sand Stream',
+				item: 'Leftovers',
+				ivs: { hp: 31, atk: 31, def: 31, spa: 0, spd: 31, spe: 31 },
+				evs: { hp: 252, atk: 252, def: 0, spa: 0, spd: 4, spe: 0 },
+				moves: ['Rock Slide', 'Crunch', 'Low Kick', 'Protect'],
+			},
+		],
+		enemyKey: 'Tyranitar',
+		expectedTop3Contains: ['Conkeldurr'],
+		sourceNote: 'With gimmicks disabled, the same set no longer receives Dynamax HP and Max Move conversion effects.',
+		scoreTolerance: { minTop1Score: 0.95, maxTop1Score: 1.1 },
+	},
+	{
+		name: 'Edge gimmick: Dynamax non-Fighting setup line enabled (Gen 8)',
+		format: 'singles',
+		gen: 8,
+		mechanicsPolicy: 'generation-default',
+		myTeam: [
+			{
+				species: 'Gengar',
+				level: 50,
+				nature: 'Timid',
+				ability: 'Cursed Body',
+				item: 'Life Orb',
+				dynamax: true,
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 4, atk: 0, def: 0, spa: 252, spd: 0, spe: 252 },
+				moves: ['Shadow Ball', 'Nasty Plot', 'Protect', 'Thunderbolt'],
+			},
+		],
+		enemy: [
+			{
+				species: 'Umbreon',
+				level: 50,
+				nature: 'Calm',
+				ability: 'Synchronize',
+				item: 'Leftovers',
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 252, atk: 0, def: 4, spa: 0, spd: 252, spe: 0 },
+				moves: ['Snarl', 'Foul Play', 'Wish', 'Protect'],
+			},
+		],
+		enemyKey: 'Umbreon',
+		expectedTop3Contains: ['Gengar'],
+		sourceNote: 'Non-Fighting/Poison Max Move BP scaling plus setup-line selection should improve projected trade in this controlled matchup.',
+		scoreTolerance: { minTop1Score: 0.05 },
+	},
+	{
+		name: 'Edge gimmick: Dynamax non-Fighting setup line disabled (Gen 8)',
+		format: 'singles',
+		gen: 8,
+		mechanicsPolicy: 'disable-all',
+		myTeam: [
+			{
+				species: 'Gengar',
+				level: 50,
+				nature: 'Timid',
+				ability: 'Cursed Body',
+				item: 'Life Orb',
+				dynamax: true,
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 4, atk: 0, def: 0, spa: 252, spd: 0, spe: 252 },
+				moves: ['Shadow Ball', 'Nasty Plot', 'Protect', 'Thunderbolt'],
+			},
+		],
+		enemy: [
+			{
+				species: 'Umbreon',
+				level: 50,
+				nature: 'Calm',
+				ability: 'Synchronize',
+				item: 'Leftovers',
+				ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
+				evs: { hp: 252, atk: 0, def: 4, spa: 0, spd: 252, spe: 0 },
+				moves: ['Snarl', 'Foul Play', 'Wish', 'Protect'],
+			},
+		],
+		enemyKey: 'Umbreon',
+		expectedTop3Contains: ['Gengar'],
+		sourceNote: 'Disabling gimmicks removes Dynamax conversion and survival boost, exposing lower projected setup-line stability.',
+		scoreTolerance: { maxTop1Score: -0.4 },
 	},
 ];
 
 async function run(): Promise<void> {
-	await loadData(3, 'showdown');
+	await loadData(undefined, 'showdown');
 
 	let passed = 0;
 	console.log(`\n${bold('Benchmark validation')}`);
 	console.log(dim(line()));
 	console.log(dim(`Scenarios: ${scenarios.length}`));
 	for (const scenario of scenarios) {
+		await loadData(scenario.gen, 'showdown');
 		const options: EvaluationOptions = {
 			mode: 'competitive',
 			battleFormat: scenario.format,
+			mechanicsPolicy: scenario.mechanicsPolicy ?? 'generation-default',
 			allowSwitching: false,
 			battleState: { weather: 'none', terrain: 'none', mySide: {}, enemySide: {} },
 		};
 		const result = evaluateTeams(scenario.myTeam, scenario.enemy, options);
-		const top3 = (result[scenario.enemyKey] ?? []).slice(0, 3).map((x) => x.pokemon);
+		const ranked = (result[scenario.enemyKey] ?? []).slice(0, 3);
+		const top3 = ranked.map((x) => x.pokemon);
 		const missing = scenario.expectedTop3Contains.filter((name) => !top3.includes(name));
-		const ok = missing.length === 0;
+
+		const scoreErrors: string[] = [];
+		if (scenario.scoreTolerance) {
+			const [top1] = ranked;
+			if (!top1) {
+				scoreErrors.push('insufficient ranked results for score checks');
+			} else {
+				if (scenario.scoreTolerance.minTop1Score !== undefined && top1.score < scenario.scoreTolerance.minTop1Score) {
+					scoreErrors.push(`top1 score ${(top1.score * 100).toFixed(2)}% < min ${(scenario.scoreTolerance.minTop1Score * 100).toFixed(2)}%`);
+				}
+				if (scenario.scoreTolerance.maxTop1Score !== undefined && top1.score > scenario.scoreTolerance.maxTop1Score) {
+					scoreErrors.push(`top1 score ${(top1.score * 100).toFixed(2)}% > max ${(scenario.scoreTolerance.maxTop1Score * 100).toFixed(2)}%`);
+				}
+			}
+		}
+		if (scenario.format === 'doubles' && scenario.doublesScoreTolerance) {
+			const [top1, top2, top3Entry] = ranked;
+			if (!top1 || !top2 || !top3Entry) {
+				scoreErrors.push('insufficient ranked results for doubles score checks');
+			} else {
+				if (scenario.doublesScoreTolerance.minTop1Score !== undefined && top1.score < scenario.doublesScoreTolerance.minTop1Score) {
+					scoreErrors.push(`top1 score ${(top1.score * 100).toFixed(2)}% < min ${(scenario.doublesScoreTolerance.minTop1Score * 100).toFixed(2)}%`);
+				}
+				if (scenario.doublesScoreTolerance.minTop1VsTop2Gap !== undefined) {
+					const gap = top1.score - top2.score;
+					if (gap < scenario.doublesScoreTolerance.minTop1VsTop2Gap) {
+						scoreErrors.push(`top1-top2 gap ${(gap * 100).toFixed(2)}% < min ${(scenario.doublesScoreTolerance.minTop1VsTop2Gap * 100).toFixed(2)}%`);
+					}
+				}
+				if (scenario.doublesScoreTolerance.minTop1VsTop3Gap !== undefined) {
+					const gap = top1.score - top3Entry.score;
+					if (gap < scenario.doublesScoreTolerance.minTop1VsTop3Gap) {
+						scoreErrors.push(`top1-top3 gap ${(gap * 100).toFixed(2)}% < min ${(scenario.doublesScoreTolerance.minTop1VsTop3Gap * 100).toFixed(2)}%`);
+					}
+				}
+			}
+		}
+
+		const ok = missing.length === 0 && scoreErrors.length === 0;
 		if (ok) passed += 1;
 
 		const statusText = ok ? paint('PASS', ANSI.green) : paint('FAIL', ANSI.red);
@@ -378,10 +1019,18 @@ async function run(): Promise<void> {
 		console.log(`\n${dim(line())}`);
 		console.log(`${icon} [${statusText}] ${bold(scenario.name)} ${dim(`(${formatTag})`)}`);
 		console.log(`${paint('Top 3', ANSI.cyan)}      ${top3.join('  •  ')}`);
+		if (scenario.format === 'doubles' && ranked.length > 0) {
+			console.log(`${dim('Scores')}     ${ranked.map((x) => `${x.pokemon} ${(x.score * 100).toFixed(2)}%`).join('  •  ')}`);
+		}
 		console.log(`${dim('Reference')}  ${scenario.sourceNote}`);
 		if (!ok) {
-			console.log(`${paint('Missing', ANSI.yellow)}    ${missing.join(', ')}`);
-			console.log(`${dim('Expected')}  ${scenario.expectedTop3Contains.join(', ')}`);
+			if (missing.length > 0) {
+				console.log(`${paint('Missing', ANSI.yellow)}    ${missing.join(', ')}`);
+				console.log(`${dim('Expected')}  ${scenario.expectedTop3Contains.join(', ')}`);
+			}
+			for (const err of scoreErrors) {
+				console.log(`${paint('Tolerance', ANSI.yellow)}  ${err}`);
+			}
 		}
 	}
 

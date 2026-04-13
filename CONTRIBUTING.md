@@ -22,6 +22,7 @@ Thanks for helping improve `poke-engine`.
 Before opening a PR, run:
 
 - `npm run validate:typecheck`
+- `npm run validate:test`
 - `npm run validate:bench`
 
 Or run both:
@@ -30,6 +31,7 @@ Or run both:
 
 If you touch battle mechanics, also review:
 
+- `docs/MECHANICS_CHANGE_PROTOCOL.md` (required pre-change read)
 - `docs/MECHANICS_VALIDATION.md`
 - `docs/ENGINE_ACCURACY_VERIFICATION.md`
 
@@ -63,6 +65,7 @@ When filing a bug, include:
 
 If your contribution is about battle correctness, please follow the contributor workflow in:
 
+- `docs/MECHANICS_CHANGE_PROTOCOL.md`
 - `docs/ENGINE_ACCURACY_VERIFICATION.md`
 
 This keeps mechanics improvements reproducible and reviewable.

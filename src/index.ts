@@ -22,6 +22,7 @@ export { calculateStat, buildPokemon } from './pokemon.js';
 export { evaluateTeams, hazardSwitchInFraction } from './evaluation/index.js';
 export { estimateSpreadForSet, applyEstimatedSpread, applyEstimatedSpreadsToTeam } from './estimation.js';
 export { loadTeamFromSaveFile } from './save-import.js';
+export { parseShowdownTeam, parseTeamInput, loadTeamInputFile } from './team-import.js';
 export { fetchTrainerTeam, fetchTrainerTeamFromSource } from './trainers.js';
 export { promptForTeam, printResultsPretty, runTUI } from './interactive.js';
 export { isMain, runCli } from './cli.js';

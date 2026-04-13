@@ -13,6 +13,7 @@ export interface PokemonSet {
 	nature: string;
 	ability?: string;
 	item?: string;
+	megaForm?: string;
 	teraType?: string;
 	dynamax?: boolean;
 	status?: 'brn' | 'par' | 'psn' | 'tox' | 'slp' | 'frz' | null;
@@ -26,12 +27,14 @@ export interface SpeciesEntry {
 	name: string;
 	types: string[];
 	baseStats: Stats;
+	defaultAbility?: string;
 }
 
 export interface MoveEntry {
 	name: string;
 	type: string;
 	basePower: number;
+	maxMoveBasePower?: number;
 	category: 'Physical' | 'Special' | 'Status';
 	accuracy: number | true;
 	priority?: number;
@@ -65,6 +68,7 @@ export interface BattlePokemon {
 	moves: MoveEntry[];
 	ability?: string;
 	item?: string;
+	megaForm?: string;
 	teraType?: string;
 	dynamax?: boolean;
 	status?: 'brn' | 'par' | 'psn' | 'tox' | 'slp' | 'frz' | null;
@@ -97,6 +101,8 @@ export interface BattleState {
 export interface EvaluationOptions {
 	battleState?: BattleState;
 	battleFormat?: BattleFormat;
+	mechanicsPolicy?: 'generation-default' | 'disable-all';
+	gimmickControl?: 'manual' | 'auto';
 	lookaheadTurns?: 1 | 2 | 3;
 	allowSwitching?: boolean;
 	roleWeight?: number;

@@ -19,6 +19,7 @@ export function baseDamageWithoutRandom(
 	}
 
 	let power = move.basePower;
+	const normalizedMoveType = typeNormalized(move.type);
 	const twoTurnMoves = [
 		'Solar Beam', 'SolarBeam', 'Solar Blade', 'SolarBlade', 'Dig', 'Dive',
 		'Fly', 'Bounce', 'Skull Bash', 'Razor Wind', 'Ice Burn', 'Sky Attack',
@@ -30,16 +31,27 @@ export function baseDamageWithoutRandom(
 
 	function maxMovePower(bp: number): number {
 		if (bp <= 0) return 0;
-		if (bp <= 60) return 90;
-		if (bp <= 70) return 100;
-		if (bp <= 80) return 100;
-		if (bp <= 90) return 110;
-		if (bp <= 100) return 120;
-		if (bp <= 110) return 130;
+		const isFightingOrPoison = normalizedMoveType === 'Fighting' || normalizedMoveType === 'Poison';
+		if (isFightingOrPoison) {
+			if (bp <= 40) return 70;
+			if (bp <= 50) return 75;
+			if (bp <= 60) return 80;
+			if (bp <= 70) return 85;
+			if (bp <= 100) return 90;
+			if (bp <= 140) return 95;
+			return 100;
+		}
+		if (bp <= 40) return 90;
+		if (bp <= 50) return 100;
+		if (bp <= 60) return 110;
+		if (bp <= 70) return 120;
+		if (bp <= 100) return 130;
 		if (bp <= 140) return 140;
 		return 150;
 	}
-	if (attacker.dynamax) power = maxMovePower(power);
+	if (attacker.dynamax) {
+		power = move.maxMoveBasePower ?? maxMovePower(power);
+	}
 
 	let attackStat = move.category === 'Physical' ? attacker.stats.atk : attacker.stats.spa;
 	let defenseStat = move.category === 'Physical' ? defender.stats.def : defender.stats.spd;
@@ -79,17 +91,26 @@ export function baseDamageWithoutRandom(
 		}
 	}
 
-	const attTypes = attacker.teraType ? [attacker.teraType] : attacker.species.types;
-	let stab = 1.0;
-	if (attTypes.includes(move.type)) {
-		let adaptability = false;
-		if (attacker.ability && DATA_CACHE.abilities) {
-			adaptability = !!DATA_CACHE.abilities[attacker.ability.toLowerCase()]?.adaptability;
-		}
-		stab = (attacker.teraType || adaptability) ? 2.0 : 1.5;
+	const baseTypes = attacker.species.types;
+	const teraType = attacker.teraType;
+	const hasBaseTypeStab = baseTypes.includes(move.type);
+	const hasTeraTypeStab = !!teraType && teraType === move.type;
+	let adaptability = false;
+	if (attacker.ability && DATA_CACHE.abilities) {
+		adaptability = !!DATA_CACHE.abilities[attacker.ability.toLowerCase()]?.adaptability;
 	}
 
-	const normalizedMoveType = typeNormalized(move.type);
+	let stab = 1.0;
+	if (teraType) {
+		if (hasTeraTypeStab && hasBaseTypeStab) {
+			stab = adaptability ? 2.25 : 2.0;
+		} else if (hasTeraTypeStab || hasBaseTypeStab) {
+			stab = adaptability ? 2.0 : 1.5;
+		}
+	} else if (hasBaseTypeStab) {
+		stab = adaptability ? 2.0 : 1.5;
+	}
+
 	const normalizedDefTypes = defTypes.map(typeNormalized);
 	let typeMultiplier = typeEffectiveness(normalizedMoveType, normalizedDefTypes);
 

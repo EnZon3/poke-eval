@@ -2,6 +2,11 @@ import type { AbilityEntry, DataCache, DataSource, ItemEntry, MoveEntry, Species
 import { toID } from './utils.js';
 
 export const DATA_CACHE: DataCache = {};
+export let ACTIVE_GENERATION = 9;
+
+export function setActiveGeneration(gen?: number): void {
+	ACTIVE_GENERATION = gen ?? 9;
+}
 
 async function fetchJSON(name: string): Promise<any> {
 	const url = `https://play.pokemonshowdown.com/data/${name}`;
@@ -78,6 +83,7 @@ async function loadSpeciesFromPokeAPI(gen?: number): Promise<Record<string, Spec
 				name: formatPokemonName(String(pkmn.name)),
 				types,
 				baseStats: mapPokeAPIStats(pkmn.stats),
+				defaultAbility: undefined,
 			};
 			species[String(pkmn.name).toLowerCase()] = entry;
 			species[toID(String(pkmn.name))] = entry;
@@ -88,6 +94,7 @@ async function loadSpeciesFromPokeAPI(gen?: number): Promise<Record<string, Spec
 }
 
 export async function loadData(gen?: number, dataSource: DataSource = 'showdown'): Promise<void> {
+	setActiveGeneration(gen);
 	if (DATA_CACHE.species && DATA_CACHE.moves && DATA_CACHE.abilities && DATA_CACHE.items) {
 		return;
 	}
@@ -128,6 +135,7 @@ export async function loadData(gen?: number, dataSource: DataSource = 'showdown'
 					name: entry.name,
 					types: entry.types,
 					baseStats: entry.baseStats,
+					defaultAbility: typeof entry.abilities?.['0'] === 'string' ? entry.abilities['0'] : undefined,
 				};
 				species[entry.name.toLowerCase()] = speciesEntry;
 				species[toID(entry.name)] = speciesEntry;
@@ -145,6 +153,7 @@ export async function loadData(gen?: number, dataSource: DataSource = 'showdown'
 			name: entry.name,
 			type: entry.type,
 			basePower: entry.basePower || 0,
+			maxMoveBasePower: typeof entry.maxMove?.basePower === 'number' ? entry.maxMove.basePower : undefined,
 			category: entry.category,
 			accuracy: entry.accuracy,
 			priority: typeof entry.priority === 'number' ? entry.priority : 0,

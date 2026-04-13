@@ -3,6 +3,8 @@ import type { DataSource, PokemonSet, TrainerSource } from '../types.js';
 export type SetupState = {
 	genInput: string;
 	battleFormat: 'singles' | 'doubles';
+	mechanicsPolicy: 'generation-default' | 'disable-all';
+	gimmickControl: 'manual' | 'auto';
 	mode: 'casual' | 'competitive' | 'custom';
 	dataSource: DataSource;
 	mySource: 'json' | 'builder' | 'save';
@@ -25,7 +27,7 @@ export type SetupQuestion = {
 	options?: Array<{ label: string; value: string }>;
 };
 
-export const EDITOR_FIELDS = ['species', 'level', 'nature', 'ability', 'item', 'teraType', 'dynamax', 'status', 'ivs', 'evs', 'moves'] as const;
+export const EDITOR_FIELDS = ['species', 'level', 'nature', 'ability', 'item', 'megaForm', 'teraType', 'dynamax', 'status', 'ivs', 'evs', 'moves'] as const;
 export type EditorField = typeof EDITOR_FIELDS[number];
 
 export function createDefaultPokemonSet(): PokemonSet {
