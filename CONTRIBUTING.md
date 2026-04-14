@@ -53,6 +53,8 @@ Use clear, scoped messages. Example format:
 
 ## Reporting issues
 
+Use the GitHub issue forms so required troubleshooting details are captured consistently.
+
 When filing a bug, include:
 
 - Command/options used
@@ -60,6 +62,8 @@ When filing a bug, include:
 - Expected behavior vs actual behavior
 - Relevant output snippet
 - Environment details (Node version, OS)
+
+Maintainers triage issues using labels in `.github/labels.yml` (type, area, and status).
 
 ## Accuracy contributions
 
