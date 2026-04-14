@@ -169,11 +169,12 @@ Run local quality gates before pushing changes:
 ```bash
 npm run validate:typecheck
 npm run validate:test
+npm run validate:accuracy
 npm run validate:bench
 npm run validate:all
 ```
 
-`validate:all` runs typecheck + tests + benchmark validations.
+`validate:all` runs typecheck + tests + calculator-accuracy spot checks + benchmark validations.
 
 ## Quick usage
 

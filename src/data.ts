@@ -156,6 +156,17 @@ export async function loadData(gen?: number, dataSource: DataSource = 'showdown'
 			maxMoveBasePower: typeof entry.maxMove?.basePower === 'number' ? entry.maxMove.basePower : undefined,
 			category: entry.category,
 			accuracy: entry.accuracy,
+			willCrit: !!entry.willCrit,
+			critRatio: typeof entry.critRatio === 'number' ? entry.critRatio : undefined,
+			multiHit: typeof entry.multihit === 'number'
+				? entry.multihit
+				: (Array.isArray(entry.multihit)
+					&& entry.multihit.length === 2
+					&& typeof entry.multihit[0] === 'number'
+					&& typeof entry.multihit[1] === 'number'
+						? [entry.multihit[0], entry.multihit[1]]
+						: undefined),
+			multiAccuracy: !!entry.multiaccuracy,
 			priority: typeof entry.priority === 'number' ? entry.priority : 0,
 			recoil: !!entry.recoil,
 			drain: !!entry.drain,

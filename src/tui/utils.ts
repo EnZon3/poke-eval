@@ -10,7 +10,7 @@ export function teamFromDefaults(filePath?: string): PokemonSet[] {
 		if (Array.isArray(parsed) && parsed.length > 0) return parsed;
 	} catch {
 		// ignore and fallback
-	}
+	} 
 	return [createDefaultPokemonSet()];
 }
 

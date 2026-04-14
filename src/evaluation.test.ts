@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DATA_CACHE, setActiveGeneration } from './data.js';
 import { buildPokemon } from './pokemon.js';
-import { baseDamageWithoutRandom } from './evaluation/damage.js';
+import { baseDamageWithoutRandom, computeDamageProfile } from './evaluation/damage.js';
 import { evaluateTeams as evaluateTeamsCompat } from './evaluation.js';
 import { evaluateTeams } from './evaluation/index.js';
 import type { MoveEntry, PokemonSet, SpeciesEntry } from './types.js';
@@ -34,6 +34,8 @@ function seedDataCache(): void {
 		vinewhip: { name: 'Vine Whip', type: 'Grass', basePower: 45, category: 'Physical', accuracy: 100, priority: 0 },
 		ember: { name: 'Ember', type: 'Fire', basePower: 40, category: 'Special', accuracy: 100, priority: 0 },
 		watergun: { name: 'Water Gun', type: 'Water', basePower: 40, category: 'Special', accuracy: 100, priority: 0 },
+		waterslap: { name: 'Water Slap', type: 'Water', basePower: 25, category: 'Physical', accuracy: 100, priority: 0 },
+		surgingstrikes: { name: 'Surging Strikes', type: 'Water', basePower: 25, category: 'Physical', accuracy: 100, priority: 0, willCrit: true, multiHit: 3 },
 		dragonclaw: { name: 'Dragon Claw', type: 'Dragon', basePower: 80, category: 'Physical', accuracy: 100, priority: 0 },
 		tackle: { name: 'Tackle', type: 'Normal', basePower: 40, category: 'Physical', accuracy: 100, priority: 0 },
 		shadowball: { name: 'Shadow Ball', type: 'Ghost', basePower: 80, maxMoveBasePower: 130, category: 'Special', accuracy: 100, priority: 0 },
@@ -310,4 +312,45 @@ test('terastallization applies expected STAB multipliers for same-type and off-t
 
 	assert.ok(Math.abs((sameTypeTeraDamage / sameTypeBaseDamage) - (2 / 1.5)) < 0.05);
 	assert.ok(Math.abs((offTypeTeraDamage / offTypeBaseDamage) - 1.5) < 0.05);
+});
+
+test('guaranteed critical multi-hit moves apply crit and fixed hit count', () => {
+	seedDataCache();
+	setActiveGeneration(9);
+
+	const attackerSingle = buildPokemon({
+		species: 'Squirtle',
+		level: 50,
+		nature: 'Hardy',
+		ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+		evs: { hp: 0, atk: 252, def: 0, spa: 0, spd: 0, spe: 0 },
+		moves: ['Water Slap'],
+	});
+	const attackerMulti = buildPokemon({
+		species: 'Squirtle',
+		level: 50,
+		nature: 'Hardy',
+		ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+		evs: { hp: 0, atk: 252, def: 0, spa: 0, spd: 0, spe: 0 },
+		moves: ['Surging Strikes'],
+	});
+	const defender = buildPokemon({
+		species: 'Charmander',
+		level: 50,
+		nature: 'Hardy',
+		ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
+		evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+		moves: ['Tackle'],
+	});
+
+	const singleMove = attackerSingle.moves[0];
+	const multiMove = attackerMulti.moves[0];
+	const singleBase = baseDamageWithoutRandom(attackerSingle, defender, singleMove, undefined, true);
+	const multiBase = baseDamageWithoutRandom(attackerMulti, defender, multiMove, undefined, true);
+	const multiProfile = computeDamageProfile(attackerMulti, defender, multiMove, undefined, true);
+
+	assert.ok(Math.abs((multiBase / singleBase) - 1.5) < 0.05);
+	assert.equal(multiProfile.min, Math.floor(multiBase * 0.85) * 3);
+	assert.equal(multiProfile.max, Math.floor(multiBase) * 3);
+	assert.ok(multiProfile.expected > singleBase * 3.9);
 });

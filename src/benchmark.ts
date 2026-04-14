@@ -529,7 +529,7 @@ const scenarios: Scenario[] = [
 		enemyKey: 'Incineroar + Landorus-Therian',
 		expectedTop3Contains: ['Urshifu-Rapid-Strike + Landorus-Therian'],
 		sourceNote: 'Double-Intimidate pivot leads are typically punished by strong special or crit-leaning pressure that resists attack-drop loops.',
-		doublesScoreTolerance: { minTop1Score: 0.05, minTop1VsTop2Gap: 0.005 },
+		doublesScoreTolerance: { minTop1Score: 0.05, minTop1VsTop2Gap: 0.001 },
 	},
 	{
 		name: 'Mechanics policy: Mega enabled by generation (Gen 6)',

@@ -37,6 +37,10 @@ export interface MoveEntry {
 	maxMoveBasePower?: number;
 	category: 'Physical' | 'Special' | 'Status';
 	accuracy: number | true;
+	willCrit?: boolean;
+	critRatio?: number;
+	multiHit?: number | [number, number];
+	multiAccuracy?: boolean;
 	priority?: number;
 	recoil?: boolean;
 	drain?: boolean;

@@ -1,0 +1,67 @@
+Scream Tail @ Booster Energy
+Ability: Protosynthesis
+Level: 50
+Tera Type: Ghost
+EVs: 252 hp / 4 atk / 60 def / 4 spd / 188 spe 
+Jolly Nature
+- Rock Tomb
+- Encore
+- Disable
+- Protect
+
+Ogerpon-Hearthflame @ Hearthflame Mask
+Ability: Mold Breaker
+Level: 50
+Tera Type: Fire
+EVs: 36 hp / 212 atk / 4 def / 4 spd / 252 spe
+IVs: 21 spa
+Jolly Nature
+- Ivy Cudgel
+- Grassy Glide
+- Swords Dance
+- Spiky Shield
+
+Rillaboom @ Clear Amulet
+Ability: Grassy Surge
+Level: 50
+Tera Type: Poison
+EVs: 244 hp / 196 atk / 4 def / 4 spd / 60 spe
+Adamant Nature
+- Wood Hammer
+- Fake Out
+- Grassy Glide
+- High Horsepower
+
+Raging Bolt @ Assault Vest
+Ability: Protosynthesis
+Level: 50
+Tera Type: Fairy
+EVs: 188 hp / 92 def / 180 spa / 20 spd / 28 spe
+IVs: 20 atk
+Modest Nature
+- Electroweb
+- Dragon Pulse
+- Thunderclap
+- Snarl
+
+Urshifu-Rapid-Strike @ Focus Sash
+Ability: Unseen Fist
+Level: 50
+Tera Type: Water
+EVs: 4 hp / 252 atk / 252 spe
+Jolly Nature
+- Surging Strikes
+- Close Combat
+- Aqua Jet
+- Protect
+
+Incineroar @ Safety Goggles
+Ability: Intimidate
+Level: 50
+Tera Type: Ghost
+EVs: 252 hp / 4 atk / 52 def / 124 spd / 76 spe
+Impish Nature
+- Flare Blitz
+- Fake Out
+- Parting Shot
+- Taunt

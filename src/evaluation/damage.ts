@@ -4,6 +4,36 @@ import type { BattlePokemon, BattleState, MoveEntry } from '../types.js';
 import { clamp, getSideForDefender, stageMultiplier, statusActionChance, typeNormalized } from './helpers.js';
 import type { DamageProfile } from './types.js';
 
+function resolvedHitCount(move: MoveEntry): number {
+	if (typeof move.multiHit === 'number') return Math.max(1, move.multiHit);
+	if (Array.isArray(move.multiHit)) {
+		const minHits = Math.max(1, Math.floor(move.multiHit[0]));
+		const maxHits = Math.max(minHits, Math.floor(move.multiHit[1]));
+		// Competitive default distribution for 2-5 hit moves is centered at 3 hits.
+		if (minHits === 2 && maxHits === 5) return 3;
+		return Math.max(1, Math.round((minHits + maxHits) / 2));
+	}
+	return 1;
+}
+
+function convolveDamageDistribution(
+	perHit: Array<{ damage: number; prob: number }>,
+	hits: number,
+): Array<{ damage: number; prob: number }> {
+	let dist = [{ damage: 0, prob: 1 }];
+	for (let i = 0; i < hits; i++) {
+		const next = new Map<number, number>();
+		for (const a of dist) {
+			for (const b of perHit) {
+				const totalDamage = a.damage + b.damage;
+				next.set(totalDamage, (next.get(totalDamage) ?? 0) + (a.prob * b.prob));
+			}
+		}
+		dist = Array.from(next.entries()).map(([damage, prob]) => ({ damage, prob }));
+	}
+	return dist;
+}
+
 export function baseDamageWithoutRandom(
 	attacker: BattlePokemon,
 	defender: BattlePokemon,
@@ -57,6 +87,9 @@ export function baseDamageWithoutRandom(
 	let defenseStat = move.category === 'Physical' ? defender.stats.def : defender.stats.spd;
 
 	const attackerAbility = attacker.ability?.toLowerCase();
+	const defenderAbility = defender.ability?.toLowerCase();
+	const criticalBlocked = defenderAbility === 'battle armor' || defenderAbility === 'shell armor';
+	const isCritical = !!move.willCrit && !criticalBlocked;
 	if (move.category === 'Physical' && attacker.status === 'brn' && attackerAbility !== 'guts') {
 		attackStat = Math.floor(attackStat * 0.5);
 	}
@@ -64,12 +97,17 @@ export function baseDamageWithoutRandom(
 		attackStat = Math.floor(attackStat * 1.5);
 	}
 
+	const attackStage = move.category === 'Physical' ? (attacker.boosts?.atk ?? 0) : (attacker.boosts?.spa ?? 0);
+	const defenseStage = move.category === 'Physical' ? (defender.boosts?.def ?? 0) : (defender.boosts?.spd ?? 0);
+	const appliedAttackStage = isCritical ? Math.max(0, attackStage) : attackStage;
+	const appliedDefenseStage = isCritical ? Math.min(0, defenseStage) : defenseStage;
+
 	if (move.category === 'Physical') {
-		attackStat = Math.floor(attackStat * stageMultiplier(attacker.boosts?.atk));
-		defenseStat = Math.floor(defenseStat * stageMultiplier(defender.boosts?.def));
+		attackStat = Math.floor(attackStat * stageMultiplier(appliedAttackStage));
+		defenseStat = Math.floor(defenseStat * stageMultiplier(appliedDefenseStage));
 	} else {
-		attackStat = Math.floor(attackStat * stageMultiplier(attacker.boosts?.spa));
-		defenseStat = Math.floor(defenseStat * stageMultiplier(defender.boosts?.spd));
+		attackStat = Math.floor(attackStat * stageMultiplier(appliedAttackStage));
+		defenseStat = Math.floor(defenseStat * stageMultiplier(appliedDefenseStage));
 	}
 
 	const defItem = defender.item?.toLowerCase();
@@ -82,7 +120,7 @@ export function baseDamageWithoutRandom(
 	if (weather === 'snow' && move.category === 'Physical' && defTypes.includes('Ice')) defenseStat = Math.floor(defenseStat * 1.5);
 
 	const levelFactor = Math.floor((2 * attacker.level) / 5) + 2;
-	let base = Math.floor(levelFactor * power * attackStat / Math.max(1, defenseStat)) / 50 + 2;
+	let base = Math.floor(Math.floor(levelFactor * power * attackStat / Math.max(1, defenseStat)) / 50) + 2;
 
 	if (attacker.ability && DATA_CACHE.abilities) {
 		const attAb = DATA_CACHE.abilities[attacker.ability.toLowerCase()];
@@ -114,14 +152,13 @@ export function baseDamageWithoutRandom(
 	const normalizedDefTypes = defTypes.map(typeNormalized);
 	let typeMultiplier = typeEffectiveness(normalizedMoveType, normalizedDefTypes);
 
-	const defAbilityName = defender.ability?.toLowerCase();
-	if (defAbilityName === 'thick fat' && (normalizedMoveType === 'Fire' || normalizedMoveType === 'Ice')) {
+	if (defenderAbility === 'thick fat' && (normalizedMoveType === 'Fire' || normalizedMoveType === 'Ice')) {
 		typeMultiplier *= 0.5;
 	}
-	if (defAbilityName === 'dry skin' && normalizedMoveType === 'Fire') {
+	if (defenderAbility === 'dry skin' && normalizedMoveType === 'Fire') {
 		typeMultiplier *= 1.25;
 	}
-	if ((defAbilityName === 'filter' || defAbilityName === 'prism armor' || defAbilityName === 'solid rock') && typeMultiplier > 1) {
+	if ((defenderAbility === 'filter' || defenderAbility === 'prism armor' || defenderAbility === 'solid rock') && typeMultiplier > 1) {
 		typeMultiplier *= 0.75;
 	}
 	if (attacker.ability?.toLowerCase() === 'tinted lens' && typeMultiplier > 0 && typeMultiplier < 1) {
@@ -152,10 +189,16 @@ export function baseDamageWithoutRandom(
 	if (move.category === 'Physical' && defenderSide?.reflect) itemMult *= 0.5;
 	if (move.category === 'Special' && defenderSide?.lightScreen) itemMult *= 0.5;
 
-	if (defAbilityName === 'multiscale' || defAbilityName === 'shadow shield') itemMult *= 0.5;
-	if (defAbilityName === 'fur coat' && move.category === 'Physical') itemMult *= 0.5;
+	if (defenderAbility === 'multiscale' || defenderAbility === 'shadow shield') itemMult *= 0.5;
+	if (defenderAbility === 'fur coat' && move.category === 'Physical') itemMult *= 0.5;
 
-	return Math.max(0, base * stab * typeMultiplier * itemMult);
+	let critMultiplier = 1;
+	if (isCritical) {
+		critMultiplier = 1.5;
+		if (attackerAbility === 'sniper') critMultiplier *= 1.5;
+	}
+
+	return Math.max(0, base * stab * typeMultiplier * itemMult * critMultiplier);
 }
 
 export function computeDamageProfile(
@@ -169,16 +212,22 @@ export function computeDamageProfile(
 	const accPct = move.accuracy === true ? 100 : Math.max(0, Math.min(100, move.accuracy));
 	const actionChance = statusActionChance(attacker);
 	const hitChance = (accPct / 100) * actionChance;
+	const hits = resolvedHitCount(move);
 
 	const rollFactors = Array.from({ length: 16 }, (_, i) => (85 + i) / 100);
-	const distribution: Array<{ damage: number; prob: number }> = [];
+	const perHitRolls: Array<{ damage: number; prob: number }> = [];
 	for (const roll of rollFactors) {
-		distribution.push({ damage: Math.max(0, Math.floor(baseNoRandom * roll)), prob: hitChance / rollFactors.length });
+		perHitRolls.push({ damage: Math.max(0, Math.floor(baseNoRandom * roll)), prob: 1 / rollFactors.length });
 	}
-	distribution.push({ damage: 0, prob: 1 - hitChance });
 
-	const min = baseNoRandom <= 0 ? 0 : Math.floor(baseNoRandom * 0.85);
-	const max = baseNoRandom <= 0 ? 0 : Math.floor(baseNoRandom);
+	const multiHitDist = convolveDamageDistribution(perHitRolls, hits);
+	const distribution = multiHitDist.map((entry) => ({ damage: entry.damage, prob: entry.prob * hitChance }));
+	distribution.push({ damage: 0, prob: Math.max(0, 1 - hitChance) });
+
+	const minPerHit = baseNoRandom <= 0 ? 0 : Math.floor(baseNoRandom * 0.85);
+	const maxPerHit = baseNoRandom <= 0 ? 0 : Math.floor(baseNoRandom);
+	const min = minPerHit * hits;
+	const max = maxPerHit * hits;
 	const expected = distribution.reduce((sum, p) => sum + p.damage * p.prob, 0);
 
 	const hp = defender.stats.hp;
