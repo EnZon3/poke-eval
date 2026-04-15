@@ -50,7 +50,13 @@ async function fetchPokemonEntry(speciesName: string): Promise<any | null> {
 	const defaultVariety = (speciesData.varieties as any[] | undefined)?.find((v: any) => v.is_default === true);
 	const defaultName: string | undefined = defaultVariety?.pokemon?.name;
 	if (!defaultName || defaultName === speciesName) return null;
-	return fetchPokeAPISafe(`pokemon/${defaultName}`);
+	const fallbackPokemon = await fetchPokeAPISafe(`pokemon/${defaultName}`);
+	if (!fallbackPokemon) return null;
+	return {
+		...fallbackPokemon,
+		resolved_name: fallbackPokemon.name,
+		name: speciesName,
+	};
 }
 
 function formatPokemonName(name: string): string {
