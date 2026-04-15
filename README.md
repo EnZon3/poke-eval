@@ -112,7 +112,7 @@ Portable artifact layout:
 
 Nightly builds:
 
-- A nightly workflow publishes fresh  artifacts and single-file binaries in GitHub Actions:
+- A nightly workflow publishes fresh artifacts and single-file binaries in GitHub Actions:
 	- `.github/workflows/nightly-portable-builds.yml`
 
 Run examples after download (portable build):
