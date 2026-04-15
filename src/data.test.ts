@@ -102,6 +102,11 @@ test('loadData with PokeAPI falls back to default form for form-only Pokémon (e
 		assert.deepEqual(deoxys?.types, ['Psychic']);
 		assert.equal(deoxys?.baseStats.hp, 50);
 		assert.equal(deoxys?.baseStats.atk, 150);
+
+		// The original base species name should still resolve after fallback
+		const deoxysBase = DATA_CACHE.species?.['deoxys'];
+		assert.ok(deoxysBase, 'deoxys should remain resolvable in species cache after form fallback');
+		assert.deepEqual(deoxysBase, deoxys);
 	} finally {
 		mock.restoreAll();
 		resetDataCache();
