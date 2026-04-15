@@ -110,8 +110,11 @@ async function loadSpeciesFromPokeAPI(gen?: number): Promise<Record<string, Spec
 				baseStats: mapPokeAPIStats(pkmn.stats),
 				defaultAbility: undefined,
 			};
-			species[String(pkmn.name).toLowerCase()] = entry;
-			species[toID(String(pkmn.name))] = entry;
+			const aliases = [String(pkmn.name), String(pkmn.resolved_name ?? '')].filter(Boolean);
+			for (const alias of aliases) {
+				species[alias.toLowerCase()] = entry;
+				species[toID(alias)] = entry;
+			}
 		}
 	}
 
