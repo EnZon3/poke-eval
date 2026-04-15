@@ -19,6 +19,7 @@ Designed for practical matchup planning: fast enough for iteration, detailed eno
 - [Quick usage](#quick-usage)
 - [CLI options](#cli-options)
 - [TUI keybindings](#tui-keybindings)
+- [TUI full guide](docs/TUI_GUIDE.md)
 - [Data model](#data-model)
 - [Programmatic API](#programmatic-api)
 - [Project structure](#project-structure)
@@ -271,6 +272,8 @@ Notes:
 - Generation alias parsing lives in [src/utils.ts](src/utils.ts).
 
 ## TUI keybindings
+
+Full end-user guide (setup wizard, game codes, field formats, workflows): [docs/TUI_GUIDE.md](docs/TUI_GUIDE.md)
 
 Implementation entry: [src/tui/ui.tsx](src/tui/ui.tsx)
 
