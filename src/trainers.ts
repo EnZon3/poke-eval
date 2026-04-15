@@ -41,20 +41,40 @@ async function fetchTrainerScriptForGame(game: string): Promise<{ gameCode: stri
 	);
 }
 
-export async function fetchTrainerTeam(game: string, trainerName: string): Promise<PokemonSet[]> {
-	const { gameCode, text } = await fetchTrainerScriptForGame(game);
-	const varRegex = /let\s+([a-zA-Z0-9_]+)\s*=\s*document\.querySelector\s*\(\s*["']#([^"']+)["']\s*\)/gi;
+export function parseTrainerScript(text: string, trainerName: string, gameCode: string): PokemonSet[] {
+	const varRegex = /(?:let|const|var)\s+([a-zA-Z0-9_]+)\s*=\s*document\.querySelector\s*\(\s*["']#([^"']+)["']\s*\)/gi;
 	const trainerHandles: string[] = [];
 	let m: RegExpExecArray | null;
 	while ((m = varRegex.exec(text))) {
 		trainerHandles.push(m[2] || m[1]);
 	}
 
-	const arrRegex = /(?:let|const|var)\s+[a-zA-Z0-9_]+_trainers\s*=\s*(\[[\s\S]*?\])\s*;?/;
-	const arrMatch = text.match(arrRegex);
-	if (!arrMatch) throw new Error(`Could not locate trainer array in ${gameCode}.js`);
+	const arrStartRegex = /(?:let|const|var)\s+[a-zA-Z0-9_]+_trainers\s*=\s*\[/;
+	const arrStartMatch = text.match(arrStartRegex);
+	if (!arrStartMatch || arrStartMatch.index === undefined) throw new Error(`Could not locate trainer array in ${gameCode}.js`);
+	const startPos = arrStartMatch.index + arrStartMatch[0].length - 1;
+	let depth = 0;
+	let endPos = -1;
+	let inString = false;
+	let stringChar = '';
+	for (let i = startPos; i < text.length; i++) {
+		const ch = text[i];
+		if (inString) {
+			if (ch === '\\' && i + 1 < text.length) { i++; continue; }
+			if (ch === stringChar) inString = false;
+		} else if (ch === '"' || ch === "'") {
+			inString = true;
+			stringChar = ch;
+		} else if (ch === '[') {
+			depth++;
+		} else if (ch === ']') {
+			depth--;
+			if (depth === 0) { endPos = i; break; }
+		}
+	}
+	if (endPos === -1) throw new Error(`Could not locate trainer array in ${gameCode}.js`);
 
-	let arrayStr = arrMatch[1];
+	let arrayStr = text.slice(startPos, endPos + 1);
 	arrayStr = arrayStr.replace(/([,{]\s*)([A-Za-z0-9_]+)\s*:/g, '$1"$2":');
 	arrayStr = arrayStr.replace(/\/\/.*$/gm, '');
 	arrayStr = arrayStr.replace(/,\s*}/g, '}');
@@ -128,6 +148,11 @@ export async function fetchTrainerTeam(game: string, trainerName: string): Promi
 		});
 	}
 	return applyEstimatedSpreadsToTeam(result, false);
+}
+
+export async function fetchTrainerTeam(game: string, trainerName: string): Promise<PokemonSet[]> {
+	const { gameCode, text } = await fetchTrainerScriptForGame(game);
+	return parseTrainerScript(text, trainerName, gameCode);
 }
 
 export async function fetchTrainerTeamFromSource(source: TrainerSource, game: string, trainerName: string): Promise<PokemonSet[]> {
