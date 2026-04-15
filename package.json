@@ -6,7 +6,7 @@
 	"scripts": {
 		"start": "tsx src/main.ts",
 		"test": "tsx src/main.ts",
-		"validate:test": "node --import tsx --test --test-concurrency=1 \"src/**/*.test.ts\"",
+		"validate:test": "node --import tsx --test --test-concurrency=1 \"tests/**/*.test.ts\"",
 		"validate:accuracy": "tsx src/accuracy-check.ts",
 		"build:bundle": "tsc --outDir build/esm --rootDir src",
 		"package:portable": "npm run build:bundle && node tools/package-portable.mjs",

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseTrainerScript } from './trainers.js';
+import { parseTrainerScript } from '../src/trainers.js';
 
 const mockScriptLet = `
 let wally = document.querySelector('#wally');

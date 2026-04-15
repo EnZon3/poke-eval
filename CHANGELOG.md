@@ -15,11 +15,11 @@ The format is based on Keep a Changelog and this project follows Semantic Versio
 	- `parseShowdownTeam(text)`
 	- `parseTeamInput(text)` (JSON-first, Showdown fallback)
 	- `loadTeamInputFile(path)`
-- New team-import test coverage in [src/team-import.test.ts](src/team-import.test.ts).
+- New team-import test coverage in [tests/team-import.test.ts](tests/team-import.test.ts).
 - New trainer parser API export:
 	- `parseTrainerScript(text, trainerName, gameCode)`
-- New trainer parser test coverage in [src/trainers.test.ts](src/trainers.test.ts).
-- New data-loading regression tests in [src/data.test.ts](src/data.test.ts).
+- New trainer parser test coverage in [tests/trainers.test.ts](tests/trainers.test.ts).
+- New data-loading regression tests in [tests/data.test.ts](tests/data.test.ts).
 - New setup controls for gimmicks in TUI:
 	- `mechanicsPolicy`: `generation-default | disable-all`
 	- `gimmickControl`: `manual | auto`
@@ -68,6 +68,7 @@ The format is based on Keep a Changelog and this project follows Semantic Versio
 	- Showdown team input support
 	- updated TUI keybindings and validation commands
 - Contributing documentation now references issue forms, label triage, and the mechanics change protocol.
+- Unit tests moved from `src/` into an independent `tests/` tree; `validate:test` now runs `tests/**/*.test.ts`.
 
 ### Fixed
 - PokeAPI species loading now falls back to a species default form when direct Pokémon lookup 404s, fixing form-based Pokémon such as Gen 3 Deoxys.

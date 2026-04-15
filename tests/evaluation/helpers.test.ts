@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { BattlePokemon, MoveEntry } from '../types.js';
+import type { BattlePokemon, MoveEntry } from '../../src/types.js';
 import {
 	aggregateOpponentResponse,
 	applyBoostDelta,
@@ -12,7 +12,7 @@ import {
 	pairCombinations,
 	setupBoostDelta,
 	stageMultiplier,
-} from './helpers.js';
+} from '../../src/evaluation/helpers.js';
 
 type ConsensusScenario = {
 	name: string;

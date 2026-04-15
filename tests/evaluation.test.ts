@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DATA_CACHE, setActiveGeneration } from './data.js';
-import { buildPokemon } from './pokemon.js';
-import { baseDamageWithoutRandom, computeDamageProfile } from './evaluation/damage.js';
-import { evaluateTeams as evaluateTeamsCompat } from './evaluation.js';
-import { evaluateTeams } from './evaluation/index.js';
-import type { MoveEntry, PokemonSet, SpeciesEntry } from './types.js';
+import { DATA_CACHE, setActiveGeneration } from '../src/data.js';
+import { buildPokemon } from '../src/pokemon.js';
+import { baseDamageWithoutRandom, computeDamageProfile } from '../src/evaluation/damage.js';
+import { evaluateTeams as evaluateTeamsCompat } from '../src/evaluation.js';
+import { evaluateTeams } from '../src/evaluation/index.js';
+import type { MoveEntry, PokemonSet, SpeciesEntry } from '../src/types.js';
 
 function resetDataCache(): void {
 	delete DATA_CACHE.species;

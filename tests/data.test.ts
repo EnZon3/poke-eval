@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mock } from 'node:test';
-import { DATA_CACHE, loadData, setActiveGeneration } from './data.js';
+import { DATA_CACHE, loadData, setActiveGeneration } from '../src/data.js';
 
 function resetDataCache(): void {
 	delete DATA_CACHE.species;

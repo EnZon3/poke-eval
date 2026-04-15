@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseShowdownTeam, parseTeamInput } from './team-import.js';
+import { parseShowdownTeam, parseTeamInput } from '../src/team-import.js';
 
 const sample = `Scream Tail @ Booster Energy
 Ability: Protosynthesis

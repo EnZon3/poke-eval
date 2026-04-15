@@ -31,7 +31,7 @@ This report focuses on mechanics currently modeled by `poke-engine` evaluation l
 
 Automated checks:
 
-- `src/evaluation.test.ts` (`buildPokemon gates Mega, Tera, and Dynamax by generation`)
+- `tests/evaluation.test.ts` (`buildPokemon gates Mega, Tera, and Dynamax by generation`)
 - `src/benchmark.ts` scenarios:
   - `Mechanics policy: Mega enabled by generation (Gen 6)`
   - `Mechanics policy: Mega disabled via option (Gen 6)`
@@ -47,7 +47,7 @@ Automated checks:
 
 Automated checks:
 
-- `src/evaluation.test.ts` (`dynamax damage path uses move maxMoveBasePower when available`)
+- `tests/evaluation.test.ts` (`dynamax damage path uses move maxMoveBasePower when available`)
 - `src/benchmark.ts` scenarios:
   - `Mechanics policy: Dynamax enabled by generation (Gen 8)`
   - `Mechanics policy: Dynamax disabled via option (Gen 8)`
@@ -63,7 +63,7 @@ Automated checks:
 
 Automated checks:
 
-- `src/evaluation.test.ts` (`terastallization applies expected STAB multipliers for same-type and off-type tera`)
+- `tests/evaluation.test.ts` (`terastallization applies expected STAB multipliers for same-type and off-type tera`)
 - `src/benchmark.ts` scenarios:
   - `Mechanics policy: Terastallization enabled by generation (Gen 9)`
   - `Mechanics policy: Terastallization disabled via option (Gen 9)`
