@@ -46,8 +46,8 @@ Pre-release/nightly tags do not replace stable SemVer tags; they are for preview
 ## Tagging convention
 
 - Stable:
-   - `git tag v1.0.0`
-   - `git push origin v1.0.0`
+   - `git tag vX.Y.Z`
+   - `git push origin vX.Y.Z`
 - Nightly (automated):
    - published by `.github/workflows/nightly-portable-builds.yml`
 

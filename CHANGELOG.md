@@ -77,6 +77,7 @@ The format is based on Keep a Changelog and this project follows Semantic Versio
 - TUI results cards now surface gimmick-related notes more reliably and no longer hide key tactical notes behind a single first-note display.
 - Multiple TUI/editor data paths now preserve and edit `megaForm` consistently.
 - Validation docs and contributor guidance now consistently include `validate:test` alongside typecheck/bench.
+- Packaging builds now use a source-only TypeScript build config so tests outside `src/` do not break portable or binary artifact generation.
 - README nightly-build wording typo fixed.
 
 ### Removed

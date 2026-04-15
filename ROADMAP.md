@@ -18,7 +18,7 @@ This roadmap should evolve with contributor priorities.
 
 ## Next (2-6 months)
 
-- [ ] Replace custom Showdown text parsing with Pokémon Showdown's official npm package integration (sim API) to reduce bespoke parsing code, improve readability, and track upstream format behavior.
+- [ ] Replace custom Showdown text parsing and data sourcing with Pokémon Showdown's official npm package integration (sim API) to reduce bespoke parsing code, improve readability, and track upstream format behavior.
 	- Reference: https://github.com/smogon/pokemon-showdown/blob/HEAD/sim/README.md
 - [ ] Add team-level diagnostics (coverage heatmap + threat pressure map for common archetypes).
 - [ ] Add more explicit mechanics coverage tests (status, weather, hazards).
