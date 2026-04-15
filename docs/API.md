@@ -97,6 +97,9 @@ Parses team input as JSON array first, then falls back to Showdown export format
 
 ## Trainer adapters
 
+### `parseTrainerScript(text: string, trainerName: string, gameCode: string): PokemonSet[]`
+Parses a Littleroot Dreams trainer script string and extracts the specified trainer's team. Handles `let`, `const`, and `var` variable declarations and correctly extracts nested arrays.
+
 ### `fetchTrainerTeam(game: string, trainerName: string): Promise<PokemonSet[]>`
 Fetches a trainer team from default source behavior.
 
