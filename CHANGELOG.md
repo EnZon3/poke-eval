@@ -8,6 +8,36 @@ The format is based on Keep a Changelog and this project follows Semantic Versio
 
 - _No changes yet._
 
+## [1.1.1] - 2026-04-16
+
+### Added
+- New all-platform portable packaging command:
+	- `npm run package:portable:all`
+- Portable runtime builds now emit ready-to-upload `.tar.gz` archives during packaging:
+	- `poke-engine-portable-linux-x64.tar.gz`
+	- `poke-engine-portable-windows-x64.tar.gz`
+	- `poke-engine-portable-macos-x64.tar.gz`
+	- `poke-engine-portable-macos-arm64.tar.gz`
+- Nightly release workflow now builds all portable archives from one Ubuntu job while keeping single-file binaries on native runners where needed.
+
+### Changed
+- Portable launchers now open the guided TUI by default with no `--tui` flag required.
+- Windows portable users can launch the TUI by double-clicking `poke-engine.cmd` from the extracted portable folder.
+- Single-file binary packaging now targets Node 22 to match the current dependency stack.
+- TUI setup copy was shortened while preserving parenthetical hints for casual users.
+- TUI editor fields are now generation-aware:
+	- Gen 6-7 shows `megaForm`
+	- Gen 8 shows `dynamax`
+	- Gen 9 shows `teraType`
+	- Gen 1-5 hides all battle-gimmick fields
+	- `Disable all battle gimmicks` hides all battle-gimmick fields
+
+### Fixed
+- Removed the redundant TUI trainer-source prompt, since PokeAPI trainer rosters currently fall back to Littleroot Dreams data.
+- Single-file binaries no longer try to launch the TUI by default; no-argument runs now print usage plus a portable-build tip.
+- `--tui` in single-file binaries now exits with an explicit limitation message instead of exposing pkg/Ink runtime internals.
+- Release documentation now reflects the portable-first TUI distribution path and precompressed portable artifacts.
+
 ## [1.1.0] - 2026-04-15
 
 ### Added

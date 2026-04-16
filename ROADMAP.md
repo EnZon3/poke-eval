@@ -127,6 +127,7 @@ Goal: make the interactive experience easier to scan, easier to test, and ready 
 - [x] Improve docs consistency across CLI, API, and TUI references. *(completed April 2026; aligned keybindings and CLI/API reference pointers, and synced validation command docs)*
 - [x] Add Mega Evolution support (generation-dependent availability/behavior).
 - [x] Implement proper simulation paths for Terastallization and Dynamax, gated by generation/format rules.
+- [ ] Fix support for TUI in packaged binary builds.
 
 ## Next (2-6 months)
 
