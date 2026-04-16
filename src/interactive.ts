@@ -84,6 +84,7 @@ export interface TuiDefaults {
 }
 
 export async function runTUI(defaults: TuiDefaults = {}): Promise<void> {
-	const { runInkTUI } = await import('./tui/index.js');
+	const tuiModule = ['./tui', 'index.js'].join('/');
+	const { runInkTUI } = await import(tuiModule);
 	await runInkTUI(defaults);
 }

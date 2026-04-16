@@ -9,7 +9,7 @@ import { parseTeamInput } from '../team-import.js';
 import { fetchTrainerTeamFromSource } from '../trainers.js';
 import type { CliResult, EvaluationOptions, PokemonSet } from '../types.js';
 import { parseGeneration } from '../utils.js';
-import { EDITOR_FIELDS, createDefaultPokemonSet, type SetupState } from './model.js';
+import { createDefaultPokemonSet, getEditorFieldsForGeneration, type EditorField, type SetupState } from './model.js';
 import { buildSetupQuestions } from './setup.js';
 import { getFieldValue, teamFromDefaults, updateFieldValue } from './utils.js';
 import { EditorView, HelpView, ResultsView, SetupView } from './views.js';
@@ -73,13 +73,18 @@ export function InkTuiApp({ defaults }: { defaults: TuiDefaults }): React.JSX.El
 
 	const setupQuestions = useMemo(() => buildSetupQuestions(setup, setSetup), [setup]);
 	const resultEnemyKeys = useMemo(() => Object.keys(results ?? {}), [results]);
+	const editorGeneration = parseGeneration(setup.genInput) ?? 9;
+	const editorFields = useMemo(
+		() => getEditorFieldsForGeneration(editorGeneration, setup.mechanicsPolicy),
+		[editorGeneration, setup.mechanicsPolicy],
+	);
 
 	const activeQuestion = setupQuestions[Math.min(setupIndex, setupQuestions.length - 1)];
 	const selectedPokemon = editingSide === 'my' ? selectedMyPokemon : selectedEnemyPokemon;
 	const activeTeam = editingSide === 'my' ? myTeam : enemyTeam;
 	const activePokemon = activeTeam[selectedPokemon] ?? createDefaultPokemonSet();
 
-	const setFieldValue = (field: (typeof EDITOR_FIELDS)[number], value: string): void => {
+	const setFieldValue = (field: EditorField, value: string): void => {
 		const updateTeam = editingSide === 'my' ? setMyTeam : setEnemyTeam;
 		updateTeam((prev) => {
 			const next = [...prev];
@@ -214,9 +219,11 @@ export function InkTuiApp({ defaults }: { defaults: TuiDefaults }): React.JSX.El
 					return;
 				}
 				if (key.return) {
-					setFieldValue(EDITOR_FIELDS[selectedField], editBuffer);
+					const field = editorFields[selectedField];
+					if (!field) return;
+					setFieldValue(field, editBuffer);
 					setEditMode(false);
-					setStatusMsg(`Updated ${EDITOR_FIELDS[selectedField]} for slot ${selectedPokemon + 1}.`);
+					setStatusMsg(`Updated ${field} for slot ${selectedPokemon + 1}.`);
 				}
 				return;
 			}
@@ -234,13 +241,15 @@ export function InkTuiApp({ defaults }: { defaults: TuiDefaults }): React.JSX.El
 				else setSelectedEnemyPokemon((v: number) => Math.min(maxIndex, v + 1));
 			}
 			if (key.leftArrow) setSelectedField((v: number) => Math.max(0, v - 1));
-			if (key.rightArrow) setSelectedField((v: number) => Math.min(EDITOR_FIELDS.length - 1, v + 1));
+			if (key.rightArrow) setSelectedField((v: number) => Math.min(editorFields.length - 1, v + 1));
 			if (input === 'o') {
 				setEditingSide((v) => (v === 'my' ? 'enemy' : 'my'));
 				setStatusMsg(`Now editing ${editingSide === 'my' ? 'enemy' : 'your'} team.`);
 			}
 			if (input === 'e') {
-				setEditBuffer(getFieldValue(EDITOR_FIELDS[selectedField], activePokemon));
+				const field = editorFields[selectedField];
+				if (!field) return;
+				setEditBuffer(getFieldValue(field, activePokemon));
 				setEditMode(true);
 			}
 			if (input === 'a' && activeTeam.length < 6) {
@@ -325,7 +334,7 @@ export function InkTuiApp({ defaults }: { defaults: TuiDefaults }): React.JSX.El
 				selectedEnemyPokemon={selectedEnemyPokemon}
 				selectedPokemon={selectedPokemon}
 				selectedField={selectedField}
-				fields={EDITOR_FIELDS}
+				fields={editorFields}
 				activePokemon={activePokemon}
 				editMode={editMode}
 				editBuffer={editBuffer}

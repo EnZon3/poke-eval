@@ -34,8 +34,9 @@ export function isMain(): boolean {
 
 export async function runCli(): Promise<void> {
 	const args = process.argv.slice(2);
+	const packagedBinary = Boolean((process as { pkg?: unknown }).pkg);
 	let showHelp = false;
-	let launchTui = args.length === 0;
+	let launchTui = args.length === 0 && !packagedBinary;
 	let jsonOutput = false;
 	let gen: number | undefined;
 	let dataSource: DataSource = 'showdown';
@@ -177,7 +178,7 @@ export async function runCli(): Promise<void> {
 		throw new Error('Use either --my=<team.json> or --my-save=<savefile>, not both.');
 	}
 
-	if (showHelp) {
+	if (showHelp || (packagedBinary && args.length === 0)) {
 		console.log('Usage:');
 		console.log('  npm start -- --my=my-team.json --enemy=enemy-team.json [--gen=sv]');
 		console.log('  npm start -- --my=my-team.txt --enemy=enemy-team.txt [--gen=sv]');
@@ -192,12 +193,16 @@ export async function runCli(): Promise<void> {
 		console.log('  npm start -- --my=my-team.json --against-trainer=sv:nemona');
 		console.log('  npm start -- --my=my-team.json --enemy=enemy-team.json --lookahead=3 --allow-switching --weather=rain --defensive-weight=0.3 --opponent-risk-weight=0.55');
 		console.log('  npm start -- --tui');
+		if (packagedBinary && args.length === 0) {
+			console.log('');
+			console.log('Tip: for the guided TUI, download a portable runtime build and run its launcher with no arguments.');
+		}
 		return;
 	}
 
 	if (launchTui) {
-		if ((process as { pkg?: unknown }).pkg) {
-			throw new Error('TUI mode is not available in packaged binaries yet. Use --my and --enemy JSON inputs with optional --json output.');
+		if (packagedBinary) {
+			throw new Error('TUI mode is not available in single-file binaries. Use a portable runtime build for the guided TUI, or pass CLI flags to this binary.');
 		}
 		await runTUI({ gen, myFile, mySaveFile, enemyFile, game, trainerName, dataSource, trainerSource, jsonOutput, evaluationOptions });
 		return;

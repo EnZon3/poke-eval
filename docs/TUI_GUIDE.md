@@ -34,11 +34,13 @@ npm start -- --tui
 ```bash
 # macOS / Linux
 chmod +x ./poke-engine
-./poke-engine --tui
+./poke-engine
 
 # Windows
-poke-engine.cmd --tui
+poke-engine.cmd
 ```
+
+On Windows, you can also double-click `poke-engine.cmd` from the extracted portable folder.
 
 The TUI opens in your terminal and guides you through three sequential phases: **Setup → Editor → Results**.
 

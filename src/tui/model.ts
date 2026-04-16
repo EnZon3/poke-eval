@@ -30,6 +30,19 @@ export type SetupQuestion = {
 export const EDITOR_FIELDS = ['species', 'level', 'nature', 'ability', 'item', 'megaForm', 'teraType', 'dynamax', 'status', 'ivs', 'evs', 'moves'] as const;
 export type EditorField = typeof EDITOR_FIELDS[number];
 
+export function getEditorFieldsForGeneration(
+	gen: number,
+	mechanicsPolicy: SetupState['mechanicsPolicy'],
+): readonly EditorField[] {
+	const gimmicksDisabled = mechanicsPolicy === 'disable-all';
+	return EDITOR_FIELDS.filter((field) => {
+		if (field === 'megaForm') return !gimmicksDisabled && gen >= 6 && gen <= 7;
+		if (field === 'dynamax') return !gimmicksDisabled && gen === 8;
+		if (field === 'teraType') return !gimmicksDisabled && gen === 9;
+		return true;
+	});
+}
+
 export function createDefaultPokemonSet(): PokemonSet {
 	return {
 		species: 'Pikachu',

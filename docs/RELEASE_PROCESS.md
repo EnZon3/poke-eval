@@ -33,6 +33,7 @@ Pre-release/nightly tags do not replace stable SemVer tags; they are for preview
 2. CI workflows pass on `main`
    - `.github/workflows/validate.yml`
    - `.github/workflows/mechanics-validation.yml`
+   - `.github/workflows/nightly-portable-builds.yml`
 3. Documentation is current
    - `README.md`
    - `docs/API.md`
@@ -50,6 +51,8 @@ Pre-release/nightly tags do not replace stable SemVer tags; they are for preview
    - `git push origin vX.Y.Z`
 - Nightly (automated):
    - published by `.github/workflows/nightly-portable-builds.yml`
+   - portable runtime builds are produced for all supported platforms from the Ubuntu job as `.tar.gz` assets
+   - single-file binaries are still built on their native CI runners where needed, especially macOS signing
 
 ## Post-release hygiene
 

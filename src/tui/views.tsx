@@ -150,7 +150,7 @@ export function EditorView(props: EditorViewProps): React.JSX.Element {
 						))}
 					</Box>
 					<Box width={activeWidth} borderStyle="round" borderColor="green" flexDirection="column" paddingX={1}>
-						<Text bold wrap="truncate-end">Step-by-step Config Editor</Text>
+						<Text bold wrap="truncate-end">Pokémon Editor</Text>
 						<Text wrap="truncate-end">Editing: {editingSide === 'my' ? 'Your team' : 'Enemy team'}</Text>
 						<Text wrap="truncate-end">Selected slot: {selectedPokemon + 1}</Text>
 						<Text dimColor wrap="truncate-end">IVs: {statsToCsv(activePokemon.ivs)}</Text>

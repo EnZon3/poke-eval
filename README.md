@@ -103,11 +103,12 @@ Starter files you can edit directly:
 
 If you download packaged artifacts from Releases, users do not need Node.js or npm.
 
-Recommended for most users: **portable runtime builds** (full app, including TUI).
+Recommended for most users: **portable runtime builds** (full app, including TUI). On Windows, double-click `poke-engine.cmd` to open the guided TUI.
 
 Portable artifact layout:
 
-- `portable-<platform>-<arch>/`
+- `poke-engine-portable-<platform>-<arch>.tar.gz`
+- extracted folder: `portable-<platform>-<arch>/`
 - launcher files: `poke-engine`, `poke-engine.cmd`, `poke-engine.ps1`
 - bundled runtime + app files
 
@@ -120,9 +121,10 @@ Run examples after download (portable build):
 
 - macOS / Linux:
 	- `chmod +x ./poke-engine`
-	- `./poke-engine --tui`
+	- `./poke-engine`
 - Windows:
-	- `poke-engine.cmd --tui`
+	- double-click `poke-engine.cmd`
+	- or run `poke-engine.cmd` from Command Prompt
 
 Alternative: single-file binaries (CLI-focused):
 
@@ -143,14 +145,15 @@ Run examples after download:
 
 Current limitation:
 
-- Packaged binaries currently support file-driven CLI execution.
-- TUI mode (`--tui`) is not enabled in packaged binaries yet.
+- Single-file binaries currently support file-driven CLI execution.
+- TUI mode (`--tui`) is not enabled in single-file binaries because the current Ink/Yoga TUI stack is not compatible with pkg's single-file snapshot runtime.
 - Use portable runtime builds for packaged TUI usage.
 
 For maintainers building local binaries:
 
 ```bash
 npm run package:portable
+npm run package:portable:all
 npm run package:bin:linux-x64
 npm run package:bin:macos-x64
 npm run package:bin:macos-arm64
@@ -160,6 +163,7 @@ npm run package:bin:win-x64
 Build all targets:
 
 ```bash
+npm run package:portable:all
 npm run package:bin:all
 ```
 

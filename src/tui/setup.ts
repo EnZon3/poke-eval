@@ -8,7 +8,7 @@ export function buildSetupQuestions(
 	const questions: SetupQuestion[] = [
 		{
 			id: 'gen',
-			label: 'Generation (1-9, or alias; blank = latest)',
+			label: 'Generation (1-9; blank latest)',
 			kind: 'text',
 			value: setup.genInput,
 			setValue: v => setSetup((prev) => ({ ...prev, genInput: v })),
@@ -21,19 +21,19 @@ export function buildSetupQuestions(
 			value: setup.battleFormat,
 			setValue: v => setSetup((prev) => ({ ...prev, battleFormat: v === 'doubles' ? 'doubles' : 'singles' })),
 			options: [
-				{ label: 'Singles (1v1 matchup matrix)', value: 'singles' },
-				{ label: 'Doubles (2v2 lead matrix / VGC-style)', value: 'doubles' },
+				{ label: 'Singles (1v1 matrix)', value: 'singles' },
+				{ label: 'Doubles (2v2 leads)', value: 'doubles' },
 			],
 		},
 		{
 			id: 'mechanicsPolicy',
-			label: 'Battle gimmicks policy (Mega / Dynamax / Tera)',
+			label: 'Battle gimmicks (Mega/Dynamax/Tera)',
 			kind: 'select',
 			value: setup.mechanicsPolicy,
 			setValue: v => setSetup((prev) => ({ ...prev, mechanicsPolicy: v === 'disable-all' ? 'disable-all' : 'generation-default' })),
 			options: [
-				{ label: 'Default by generation (Gen6-7 Mega, Gen8 Dynamax, Gen9 Tera)', value: 'generation-default' },
-				{ label: 'Disable all battle gimmicks (no Mega / Dynamax / Tera)', value: 'disable-all' },
+				{ label: 'Default by generation', value: 'generation-default' },
+				{ label: 'Disable all battle gimmicks', value: 'disable-all' },
 			],
 		},
 		{
@@ -43,8 +43,8 @@ export function buildSetupQuestions(
 			value: setup.gimmickControl,
 			setValue: v => setSetup((prev) => ({ ...prev, gimmickControl: v === 'auto' ? 'auto' : 'manual' })),
 			options: [
-				{ label: 'Manual (use team flags directly: megaForm / teraType / dynamax)', value: 'manual' },
-				{ label: 'Auto (engine chooses timing; opponent assumes best response)', value: 'auto' },
+				{ label: 'Manual (team flags)', value: 'manual' },
+				{ label: 'Auto (engine timing)', value: 'auto' },
 			],
 		},
 		{
@@ -54,9 +54,9 @@ export function buildSetupQuestions(
 			value: setup.mode,
 			setValue: v => setSetup((prev) => ({ ...prev, mode: v === 'competitive' ? 'competitive' : (v === 'custom' ? 'custom' : 'casual') })),
 			options: [
-				{ label: 'Casual (clear + forgiving)', value: 'casual' },
-				{ label: 'Competitive (deeper + risk-aware)', value: 'competitive' },
-				{ label: 'Custom (manual flag tuning)', value: 'custom' },
+				{ label: 'Casual (clear)', value: 'casual' },
+				{ label: 'Competitive (risk-aware)', value: 'competitive' },
+				{ label: 'Custom (CLI flags)', value: 'custom' },
 			],
 		},
 		{
@@ -67,7 +67,7 @@ export function buildSetupQuestions(
 			setValue: v => setSetup((prev) => ({ ...prev, dataSource: v === 'pokeapi' ? 'pokeapi' : 'showdown' })),
 			options: [
 				{ label: 'Pokémon Showdown data', value: 'showdown' },
-				{ label: 'PokeAPI generation species', value: 'pokeapi' },
+				{ label: 'PokeAPI species', value: 'pokeapi' },
 			],
 		},
 		{
@@ -77,9 +77,9 @@ export function buildSetupQuestions(
 			value: setup.mySource,
 			setValue: v => setSetup((prev) => ({ ...prev, mySource: v === 'json' ? 'json' : (v === 'save' ? 'save' : 'builder') })),
 			options: [
-				{ label: 'Build interactively (party builder)', value: 'builder' },
-				{ label: 'Load from team file (JSON or Showdown)', value: 'json' },
-				{ label: 'Load from save file (PKHeX)', value: 'save' },
+				{ label: 'Build interactively (teambuilder)', value: 'builder' },
+				{ label: 'Load from team file (JSON/Showdown)', value: 'json' },
+				{ label: 'Load from save file', value: 'save' },
 			],
 		},
 	];
@@ -87,7 +87,7 @@ export function buildSetupQuestions(
 	if (setup.mySource === 'json') {
 		questions.push({
 			id: 'myFile',
-			label: 'Path to your team file (.json or Showdown .txt)',
+			label: 'Your team file (.json/.txt)',
 			kind: 'text',
 			value: setup.myFile,
 			setValue: v => setSetup((prev) => ({ ...prev, myFile: v })),
@@ -98,7 +98,7 @@ export function buildSetupQuestions(
 	if (setup.mySource === 'save') {
 		questions.push({
 			id: 'mySaveFile',
-			label: 'Path to your save file (.sav/.dat)',
+			label: 'Your save file (.sav/.dat)',
 			kind: 'text',
 			value: setup.mySaveFile,
 			setValue: v => setSetup((prev) => ({ ...prev, mySaveFile: v })),
@@ -113,16 +113,16 @@ export function buildSetupQuestions(
 		value: setup.enemySource,
 		setValue: v => setSetup((prev) => ({ ...prev, enemySource: v === 'trainer' ? 'trainer' : (v === 'builder' ? 'builder' : 'json') })),
 		options: [
-			{ label: 'Load opponent from team file (JSON or Showdown)', value: 'json' },
+			{ label: 'Load opponent file (JSON/Showdown)', value: 'json' },
 			{ label: 'Use trainer roster', value: 'trainer' },
-			{ label: 'Build opponent interactively', value: 'builder' },
+			{ label: 'Build opponent team', value: 'builder' },
 		],
 	});
 
 	if (setup.enemySource === 'json') {
 		questions.push({
 			id: 'enemyFile',
-			label: 'Path to opponent team file (.json or Showdown .txt)',
+			label: 'Opponent team file (.json/.txt)',
 			kind: 'text',
 			value: setup.enemyFile,
 			setValue: v => setSetup((prev) => ({ ...prev, enemyFile: v })),
@@ -133,19 +133,8 @@ export function buildSetupQuestions(
 	if (setup.enemySource === 'trainer') {
 		questions.push(
 			{
-				id: 'trainerSource',
-				label: 'Trainer source',
-				kind: 'select',
-				value: setup.trainerSource,
-				setValue: v => setSetup((prev) => ({ ...prev, trainerSource: v === 'pokeapi' ? 'pokeapi' : 'littleroot' })),
-				options: [
-					{ label: 'Littleroot Dreams trainer rosters', value: 'littleroot' },
-					{ label: 'PokeAPI fallback (uses Littleroot)', value: 'pokeapi' },
-				],
-			},
-			{
 				id: 'game',
-				label: 'Game code (e.g. sv, swsh, xy)',
+				label: 'Game code (sv/swsh/xy)',
 				kind: 'text',
 				value: setup.game,
 				setValue: v => setSetup((prev) => ({ ...prev, game: v })),
