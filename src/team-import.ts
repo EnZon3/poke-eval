@@ -38,15 +38,78 @@ function parseSpread(line: string, base: Stats): Stats {
 	for (const segment of line.split('/')) {
 		const trimmed = segment.trim();
 		if (!trimmed) continue;
-		const match = trimmed.match(/^(\d+)\s+(.+)$/);
-		if (!match) continue;
-		const value = Number.parseInt(match[1], 10);
+		const spaceIndex = firstWhitespaceIndex(trimmed);
+		if (spaceIndex <= 0) continue;
+		const statValue = trimmed.slice(0, spaceIndex);
+		const value = isDecimalInteger(statValue) ? Number.parseInt(statValue, 10) : Number.NaN;
 		if (Number.isNaN(value)) continue;
-		const key = statKey(match[2]);
+		const key = statKey(trimmed.slice(spaceIndex).trim());
 		if (!key) continue;
 		next[key] = value;
 	}
 	return next;
+}
+
+function firstWhitespaceIndex(value: string): number {
+	for (let i = 0; i < value.length; i += 1) {
+		const code = value.charCodeAt(i);
+		if (code === 9 || code === 10 || code === 11 || code === 12 || code === 13 || code === 32) return i;
+	}
+	return -1;
+}
+
+function isAsciiAlpha(value: string): boolean {
+	if (!value) return false;
+	for (let i = 0; i < value.length; i += 1) {
+		const code = value.charCodeAt(i);
+		if ((code < 65 || code > 90) && (code < 97 || code > 122)) return false;
+	}
+	return true;
+}
+
+function isDecimalInteger(value: string): boolean {
+	if (!value) return false;
+	for (let i = 0; i < value.length; i += 1) {
+		const code = value.charCodeAt(i);
+		if (code < 48 || code > 57) return false;
+	}
+	return true;
+}
+
+function prefixedValue(line: string, prefix: string): string | undefined {
+	if (!line.toLowerCase().startsWith(prefix.toLowerCase())) return undefined;
+	const value = line.slice(prefix.length).trim();
+	return value || undefined;
+}
+
+function splitLines(value: string): string[] {
+	const lines: string[] = [];
+	let start = 0;
+	for (let i = 0; i < value.length; i += 1) {
+		if (value[i] !== '\n') continue;
+		const end = i > start && value[i - 1] === '\r' ? i - 1 : i;
+		lines.push(value.slice(start, end));
+		start = i + 1;
+	}
+	lines.push(value.slice(start));
+	return lines;
+}
+
+function splitTeamBlocks(value: string): string[] {
+	const blocks: string[] = [];
+	let current: string[] = [];
+	for (const rawLine of splitLines(value.trim())) {
+		if (rawLine.trim()) {
+			current.push(rawLine);
+			continue;
+		}
+		if (current.length > 0) {
+			blocks.push(current.join('\n'));
+			current = [];
+		}
+	}
+	if (current.length > 0) blocks.push(current.join('\n'));
+	return blocks;
 }
 
 function speciesFromShowdownHeader(raw: string): string {
@@ -54,9 +117,22 @@ function speciesFromShowdownHeader(raw: string): string {
 	const atIndex = value.indexOf('@');
 	if (atIndex >= 0) value = value.slice(0, atIndex).trim();
 
-	const nicknameMatch = value.match(/^.*\(([^()]+)\)$/);
-	if (nicknameMatch) value = nicknameMatch[1].trim();
-	value = value.replace(/\s*\((M|F)\)$/i, '').replace(/,\s*(M|F)$/i, '').trim();
+	if (value.endsWith(')')) {
+		const openIndex = value.lastIndexOf('(');
+		const inner = openIndex >= 0 ? value.slice(openIndex + 1, -1).trim() : '';
+		const lowerInner = inner.toLowerCase();
+		if (inner && lowerInner !== 'm' && lowerInner !== 'f' && !inner.includes('(') && !inner.includes(')')) {
+			value = inner;
+		}
+	}
+	const lowerValue = value.toLowerCase();
+	if (lowerValue.endsWith(' (m)') || lowerValue.endsWith(' (f)')) {
+		value = value.slice(0, -4).trim();
+	}
+	const genderSuffix = value.slice(-3).toLowerCase();
+	if (genderSuffix === ', m' || genderSuffix === ', f') {
+		value = value.slice(0, -3).trim();
+	}
 	return value;
 }
 
@@ -68,8 +144,7 @@ function itemFromShowdownHeader(raw: string): string | undefined {
 }
 
 function parseShowdownSet(block: string): PokemonSet | null {
-	const lines = block
-		.split(/\r?\n/)
+	const lines = splitLines(block)
 		.map(line => line.trim())
 		.filter(Boolean);
 	if (lines.length === 0) return null;
@@ -90,48 +165,50 @@ function parseShowdownSet(block: string): PokemonSet | null {
 
 	for (const line of lines.slice(1)) {
 		if (line.startsWith('-')) {
-			const move = line.replace(/^-+\s*/, '').trim();
+			let start = 0;
+			while (line[start] === '-') start += 1;
+			const move = line.slice(start).trim();
 			if (move) moves.push(move);
 			continue;
 		}
-		const abilityMatch = line.match(/^Ability:\s*(.+)$/i);
-		if (abilityMatch) {
-			ability = abilityMatch[1].trim() || undefined;
+		const abilityValue = prefixedValue(line, 'Ability:');
+		if (abilityValue) {
+			ability = abilityValue;
 			continue;
 		}
-		const itemMatch = line.match(/^Item:\s*(.+)$/i);
-		if (itemMatch) {
-			item = itemMatch[1].trim() || item;
+		const itemValue = prefixedValue(line, 'Item:');
+		if (itemValue) {
+			item = itemValue;
 			continue;
 		}
-		const levelMatch = line.match(/^Level:\s*(\d+)$/i);
-		if (levelMatch) {
-			const parsed = Number.parseInt(levelMatch[1], 10);
+		const levelValue = prefixedValue(line, 'Level:');
+		if (levelValue) {
+			const parsed = isDecimalInteger(levelValue) ? Number.parseInt(levelValue, 10) : Number.NaN;
 			if (!Number.isNaN(parsed)) level = parsed;
 			continue;
 		}
-		const teraMatch = line.match(/^Tera\s+Type:\s*(.+)$/i);
-		if (teraMatch) {
-			teraType = teraMatch[1].trim() || undefined;
+		const teraValue = prefixedValue(line, 'Tera Type:');
+		if (teraValue) {
+			teraType = teraValue;
 			continue;
 		}
-		const evMatch = line.match(/^EVs:\s*(.+)$/i);
-		if (evMatch) {
-			evs = parseSpread(evMatch[1], evs);
+		const evValue = prefixedValue(line, 'EVs:');
+		if (evValue) {
+			evs = parseSpread(evValue, evs);
 			continue;
 		}
-		const ivMatch = line.match(/^IVs:\s*(.+)$/i);
-		if (ivMatch) {
-			ivs = parseSpread(ivMatch[1], ivs);
+		const ivValue = prefixedValue(line, 'IVs:');
+		if (ivValue) {
+			ivs = parseSpread(ivValue, ivs);
 			continue;
 		}
-		const natureMatch = line.match(/^([A-Za-z]+)\s+Nature$/i);
-		if (natureMatch) {
-			nature = natureMatch[1].trim();
+		if (line.toLowerCase().endsWith(' nature')) {
+			const natureValue = line.slice(0, -' Nature'.length).trim();
+			if (isAsciiAlpha(natureValue)) nature = natureValue;
 			continue;
 		}
-		const dynamaxMatch = line.match(/^Dynamax:\s*(yes|true|1)$/i);
-		if (dynamaxMatch) {
+		const dynamaxValue = prefixedValue(line, 'Dynamax:')?.toLowerCase();
+		if (dynamaxValue === 'yes' || dynamaxValue === 'true' || dynamaxValue === '1') {
 			dynamax = true;
 		}
 	}
@@ -151,9 +228,7 @@ function parseShowdownSet(block: string): PokemonSet | null {
 }
 
 export function parseShowdownTeam(text: string): PokemonSet[] {
-	const blocks = text
-		.trim()
-		.split(/\n\s*\n+/)
+	const blocks = splitTeamBlocks(text)
 		.map(block => block.trim())
 		.filter(Boolean);
 

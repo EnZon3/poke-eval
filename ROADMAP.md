@@ -128,6 +128,10 @@ Goal: make the interactive experience easier to scan, easier to test, and ready 
 - [x] Add Mega Evolution support (generation-dependent availability/behavior).
 - [x] Implement proper simulation paths for Terastallization and Dynamax, gated by generation/format rules.
 - [ ] Fix support for TUI in packaged binary builds.
+- [ ] Add an auto update check for this project's GitHub releases and show update availability in the TUI footer/status bar.
+- [ ] Reject team builder Pokémon that are unavailable in the selected generation.
+	- Example: when setup is configured for Gen 3, the team builder should reject a future-generation Pokémon such as Meowscarada instead of accepting it and continuing normally.
+	- Validation should happen before evaluation/imported team use so teams cannot silently include species from later generations.
 
 ## Next (2-6 months)
 

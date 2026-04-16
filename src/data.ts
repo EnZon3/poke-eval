@@ -262,28 +262,30 @@ export function resolveSpecies(name: string): SpeciesEntry | undefined {
 	attempts.add(name.toLowerCase());
 	attempts.add(toID(name));
 
-	const formMatch = name.match(/^(.+?)\s*\((.+)\)$/);
-	if (formMatch) {
-		const base = formMatch[1].trim();
-		const formRaw = formMatch[2].trim();
-		const formId = toID(formRaw);
-		attempts.add(base.toLowerCase());
-		attempts.add(toID(base));
-		attempts.add(`${base}-${formRaw}`.toLowerCase());
-		attempts.add(toID(`${base}-${formRaw}`));
-		const regionMap: Record<string, string> = {
-			alolan: 'Alola',
-			galarian: 'Galar',
-			hisuian: 'Hisui',
-			paldean: 'Paldea',
-		};
-		if (regionMap[formId]) {
-			attempts.add(`${base}-${regionMap[formId]}`.toLowerCase());
-			attempts.add(toID(`${base}-${regionMap[formId]}`));
-		}
-		if (formId === 'midday') {
+	if (name.endsWith(')')) {
+		const openIndex = name.lastIndexOf('(');
+		const base = openIndex > 0 ? name.slice(0, openIndex).trim() : '';
+		const formRaw = openIndex > 0 ? name.slice(openIndex + 1, -1).trim() : '';
+		if (base && formRaw) {
+			const formId = toID(formRaw);
 			attempts.add(base.toLowerCase());
 			attempts.add(toID(base));
+			attempts.add(`${base}-${formRaw}`.toLowerCase());
+			attempts.add(toID(`${base}-${formRaw}`));
+			const regionMap: Record<string, string> = {
+				alolan: 'Alola',
+				galarian: 'Galar',
+				hisuian: 'Hisui',
+				paldean: 'Paldea',
+			};
+			if (regionMap[formId]) {
+				attempts.add(`${base}-${regionMap[formId]}`.toLowerCase());
+				attempts.add(toID(`${base}-${regionMap[formId]}`));
+			}
+			if (formId === 'midday') {
+				attempts.add(base.toLowerCase());
+				attempts.add(toID(base));
+			}
 		}
 	}
 

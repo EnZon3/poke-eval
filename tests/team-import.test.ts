@@ -55,3 +55,22 @@ test('parseTeamInput supports JSON and Showdown formats', () => {
 	assert.equal(fromShowdown.length, 2);
 	assert.equal(fromShowdown[0].species, 'Scream Tail');
 });
+
+test('parseShowdownTeam handles nicknames and gender markers without regex parsing', () => {
+	const team = parseShowdownTeam(`Buddy (Flutter Mane) @ Focus Sash
+Ability: Protosynthesis
+Level: 50
+Timid Nature
+- Moonblast
+
+Indeedee-F (F) @ Psychic Seed
+Ability: Psychic Surge
+Level: 50
+Calm Nature
+- Follow Me`);
+
+	assert.equal(team[0].species, 'Flutter Mane');
+	assert.equal(team[0].item, 'Focus Sash');
+	assert.equal(team[1].species, 'Indeedee-F');
+	assert.equal(team[1].item, 'Psychic Seed');
+});

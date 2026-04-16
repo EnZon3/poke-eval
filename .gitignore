@@ -27,7 +27,6 @@ pnpm-debug.log*
 .vscode/
 
 # Testing stuff
-my-team.json
-enemy-team.json
-enemy-team-doubles.json
+my-team*.json
+enemy-team*.json
 poke-engine-legacy.ts
