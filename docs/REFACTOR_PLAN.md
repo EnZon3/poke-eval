@@ -29,9 +29,9 @@ Branch: `refactor/core-boundaries`
 - [x] 4. Split `src/data.ts` fetchers from transformers:
   `src/data/fetch-showdown.ts`, `src/data/fetch-pokeapi.ts`.
 - [x] 5. Add focused tests for extracted data normalizers.
-- [ ] 6. Refactor `src/team-import.ts` into parser stages under `src/team-import/`.
-- [ ] 7. Add parser parity tests for supported import shapes and edge cases.
-- [ ] 8. Split `src/evaluation/index.ts` into orchestration + branch logic modules.
+- [x] 6. Refactor `src/team-import.ts` into parser stages under `src/team-import/`.
+- [x] 7. Add parser parity tests for supported import shapes and edge cases.
+- [x] 8. Split `src/evaluation/index.ts` into orchestration + branch logic modules.
 - [ ] 9. De-duplicate strictly identical singles/doubles shared logic only.
 - [ ] 10. Move benchmark scenario data out of `src/benchmark.ts`.
 - [ ] 11. Introduce benchmark fixture builders for repeated scenario shapes.
