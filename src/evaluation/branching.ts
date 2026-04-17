@@ -19,6 +19,24 @@ type DoublesWorstResponse = {
 	enemyTag: string;
 };
 
+function pickBestVariant<TVariant, TWorst, TBest>(
+	variants: TVariant[],
+	selectWorst: (variant: TVariant) => TWorst | null,
+	getWorstScore: (worst: TWorst) => number,
+	toBest: (variant: TVariant, worst: TWorst) => TBest,
+	getBestScore: (best: TBest) => number,
+): TBest | null {
+	let bestChoice: TBest | null = null;
+	for (const variant of variants) {
+		const worst = selectWorst(variant);
+		if (!worst) continue;
+		if (!bestChoice || getWorstScore(worst) > getBestScore(bestChoice)) {
+			bestChoice = toBest(variant, worst);
+		}
+	}
+	return bestChoice;
+}
+
 export type BestSinglesChoice = {
 	duel: ReturnType<typeof evaluate1v1>;
 	score: number;
@@ -116,23 +134,21 @@ export function selectBestSinglesChoice(
 	enemyVariants: PokemonVariant[],
 	options: EvaluationOptions,
 ): BestSinglesChoice | null {
-	let bestChoice: BestSinglesChoice | null = null;
-	for (const myVariant of myVariants) {
-		const worst = selectWorstSinglesResponse(myVariant, enemyVariants, options);
-		if (!worst) continue;
-		if (!bestChoice || worst.score > bestChoice.score) {
-			bestChoice = {
-				duel: worst.duel,
-				score: worst.score,
-				notes: worst.notes,
-				mine: myVariant.pokemon,
-				enemy: worst.enemy,
-				myTag: myVariant.tag,
-				enemyTag: worst.enemyTag,
-			};
-		}
-	}
-	return bestChoice;
+	return pickBestVariant(
+		myVariants,
+		myVariant => selectWorstSinglesResponse(myVariant, enemyVariants, options),
+		worst => worst.score,
+		(myVariant, worst) => ({
+			duel: worst.duel,
+			score: worst.score,
+			notes: worst.notes,
+			mine: myVariant.pokemon,
+			enemy: worst.enemy,
+			myTag: myVariant.tag,
+			enemyTag: worst.enemyTag,
+		}),
+		best => best.score,
+	);
 }
 
 export function selectBestDoublesChoice(
@@ -140,19 +156,17 @@ export function selectBestDoublesChoice(
 	enemyPairVariants: PokemonPairVariant[],
 	options: EvaluationOptions,
 ): BestDoublesChoice | null {
-	let bestChoice: BestDoublesChoice | null = null;
-	for (const myVariant of myPairVariants) {
-		const worst = selectWorstDoublesResponse(myVariant, enemyPairVariants, options);
-		if (!worst) continue;
-		if (!bestChoice || worst.score > bestChoice.score) {
-			bestChoice = {
-				duel: worst.duel,
-				score: worst.score,
-				notes: worst.notes,
-				myTag: myVariant.tag,
-				enemyTag: worst.enemyTag,
-			};
-		}
-	}
-	return bestChoice;
+	return pickBestVariant(
+		myPairVariants,
+		myVariant => selectWorstDoublesResponse(myVariant, enemyPairVariants, options),
+		worst => worst.score,
+		(myVariant, worst) => ({
+			duel: worst.duel,
+			score: worst.score,
+			notes: worst.notes,
+			myTag: myVariant.tag,
+			enemyTag: worst.enemyTag,
+		}),
+		best => best.score,
+	);
 }
