@@ -31,7 +31,7 @@ jobs:
           set -euo pipefail
           VERSION=$(node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('package.json','utf8')); process.stdout.write(p.version)")
           DATE_UTC=$(date -u +%Y%m%d)
-          TAG="nightly-v${VERSION}-${DATE_UTC}.${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}"
+          TAG="v${VERSION}+nightly.${DATE_UTC}.${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}"
           TITLE="Nightly build v${VERSION} (${DATE_UTC})"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "title=$TITLE" >> "$GITHUB_OUTPUT"
