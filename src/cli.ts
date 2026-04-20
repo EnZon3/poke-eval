@@ -32,6 +32,66 @@ export function isMain(): boolean {
 	return false;
 }
 
+type ParsedCliArg =
+	| { kind: 'kv'; key: string; value: string }
+	| { kind: 'flag'; key: string };
+
+function parseCliArg(arg: string): ParsedCliArg | undefined {
+	if (!arg.startsWith('--')) return undefined;
+	const body = arg.slice(2);
+	const eq = body.indexOf('=');
+	if (eq === -1) return { kind: 'flag', key: body };
+	return {
+		kind: 'kv',
+		key: body.slice(0, eq),
+		value: body.slice(eq + 1),
+	};
+}
+
+function parseOption<T>(raw: string, parser: (value: string) => T | undefined, errorMessage: string): T {
+	const parsed = parser(raw);
+	if (!parsed) throw new Error(errorMessage);
+	return parsed;
+}
+
+function parseIntegerOption(raw: string, isValid: (value: number) => boolean, errorMessage: string): number {
+	const value = parseInt(raw, 10);
+	if (!isValid(value)) throw new Error(errorMessage);
+	return value;
+}
+
+function parseNumberOption(raw: string, isValid: (value: number) => boolean, errorMessage: string): number {
+	const value = Number(raw);
+	if (!isValid(value)) throw new Error(errorMessage);
+	return value;
+}
+
+function applyModeDefaults(options: EvaluationOptions, mode: 'casual' | 'competitive' | 'custom'): void {
+	options.mode = mode;
+	if (mode === 'casual') {
+		options.lookaheadTurns = 2;
+		options.defensiveWeight = 0.22;
+		options.opponentRiskWeight = 0.5;
+	}
+	if (mode === 'competitive') {
+		options.lookaheadTurns = 3;
+		options.defensiveWeight = 0.4;
+		options.opponentRiskWeight = 0.65;
+	}
+}
+
+function ensureMySide(options: EvaluationOptions): NonNullable<NonNullable<EvaluationOptions['battleState']>['mySide']> {
+	options.battleState = options.battleState ?? {};
+	options.battleState.mySide = options.battleState.mySide ?? {};
+	return options.battleState.mySide;
+}
+
+function ensureEnemySide(options: EvaluationOptions): NonNullable<NonNullable<EvaluationOptions['battleState']>['enemySide']> {
+	options.battleState = options.battleState ?? {};
+	options.battleState.enemySide = options.battleState.enemySide ?? {};
+	return options.battleState.enemySide;
+}
+
 export async function runCli(): Promise<void> {
 	const args = process.argv.slice(2);
 	const packagedBinary = Boolean((process as { pkg?: unknown }).pkg);
@@ -58,120 +118,132 @@ export async function runCli(): Promise<void> {
 	let enemyFile: string | undefined;
 	let enemyBuilder = false;
 
-	for (const arg of args) {
-		if (arg.startsWith('--gen=')) {
-			const value = arg.split('=')[1];
-			const parsed = parseGeneration(value);
-			if (!parsed) throw new Error(`Invalid generation: ${value}. Use 1-9 or aliases like rby/swsh/sv.`);
-			gen = parsed;
-		} else if (arg.startsWith('--game=')) {
-			game = arg.split('=')[1];
-		} else if (arg.startsWith('--data-source=')) {
-			const parsed = parseDataSource(arg.split('=')[1]);
-			if (!parsed) throw new Error('Invalid --data-source. Use showdown or pokeapi.');
-			dataSource = parsed;
-		} else if (arg.startsWith('--trainer-source=')) {
-			const parsed = parseTrainerSource(arg.split('=')[1]);
-			if (!parsed) throw new Error('Invalid --trainer-source. Use littleroot or pokeapi.');
-			trainerSource = parsed;
-		} else if (arg.startsWith('--trainer=')) {
-			trainerName = arg.split('=')[1];
-		} else if (arg.startsWith('--mode=')) {
-			const v = arg.split('=')[1]?.trim().toLowerCase();
-			if (v !== 'casual' && v !== 'competitive' && v !== 'custom') {
+	const kvHandlers: Record<string, (value: string) => void> = {
+		gen(value) {
+			gen = parseOption(value, parseGeneration, `Invalid generation: ${value}. Use 1-9 or aliases like rby/swsh/sv.`);
+		},
+		game(value) {
+			game = value;
+		},
+		'data-source'(value) {
+			dataSource = parseOption(value, parseDataSource, 'Invalid --data-source. Use showdown or pokeapi.');
+		},
+		'trainer-source'(value) {
+			trainerSource = parseOption(value, parseTrainerSource, 'Invalid --trainer-source. Use littleroot or pokeapi.');
+		},
+		trainer(value) {
+			trainerName = value;
+		},
+		mode(value) {
+			const normalizedMode = value.trim().toLowerCase();
+			if (normalizedMode !== 'casual' && normalizedMode !== 'competitive' && normalizedMode !== 'custom') {
 				throw new Error('Invalid --mode. Use casual, competitive, or custom.');
 			}
-			evaluationOptions.mode = v;
-			if (v === 'casual') {
-				evaluationOptions.lookaheadTurns = 2;
-				evaluationOptions.defensiveWeight = 0.22;
-				evaluationOptions.opponentRiskWeight = 0.5;
-			}
-			if (v === 'competitive') {
-				evaluationOptions.lookaheadTurns = 3;
-				evaluationOptions.defensiveWeight = 0.4;
-				evaluationOptions.opponentRiskWeight = 0.65;
-			}
-		} else if (arg.startsWith('--format=')) {
-			const parsed = parseBattleFormat(arg.split('=')[1]);
-			if (!parsed) throw new Error('Invalid --format. Use singles or doubles.');
-			evaluationOptions.battleFormat = parsed;
-		} else if (arg.startsWith('--weather=')) {
-			const parsed = parseWeather(arg.split('=')[1]);
-			if (!parsed) throw new Error('Invalid --weather. Use sun, rain, sand, snow, or none.');
+			applyModeDefaults(evaluationOptions, normalizedMode);
+		},
+		format(value) {
+			evaluationOptions.battleFormat = parseOption(value, parseBattleFormat, 'Invalid --format. Use singles or doubles.');
+		},
+		weather(value) {
 			evaluationOptions.battleState = evaluationOptions.battleState ?? {};
-			evaluationOptions.battleState.weather = parsed;
-		} else if (arg.startsWith('--terrain=')) {
-			const parsed = parseTerrain(arg.split('=')[1]);
-			if (!parsed) throw new Error('Invalid --terrain. Use electric, grassy, misty, psychic, or none.');
+			evaluationOptions.battleState.weather = parseOption(value, parseWeather, 'Invalid --weather. Use sun, rain, sand, snow, or none.');
+		},
+		terrain(value) {
 			evaluationOptions.battleState = evaluationOptions.battleState ?? {};
-			evaluationOptions.battleState.terrain = parsed;
-		} else if (arg.startsWith('--lookahead=')) {
-			const v = parseInt(arg.split('=')[1], 10);
-			if (v !== 1 && v !== 2 && v !== 3) throw new Error('Invalid --lookahead. Use 1, 2, or 3.');
-			evaluationOptions.lookaheadTurns = v;
-		} else if (arg === '--allow-switching') {
-			evaluationOptions.allowSwitching = true;
-		} else if (arg.startsWith('--role-weight=')) {
-			const v = Number(arg.split('=')[1]);
-			if (Number.isNaN(v) || v < 0) throw new Error('Invalid --role-weight. Use a non-negative number.');
-			evaluationOptions.roleWeight = v;
-		} else if (arg.startsWith('--defensive-weight=')) {
-			const v = Number(arg.split('=')[1]);
-			if (Number.isNaN(v) || v < 0) throw new Error('Invalid --defensive-weight. Use a non-negative number.');
-			evaluationOptions.defensiveWeight = v;
-		} else if (arg.startsWith('--opponent-risk-weight=')) {
-			const v = Number(arg.split('=')[1]);
-			if (Number.isNaN(v) || v < 0 || v > 1) throw new Error('Invalid --opponent-risk-weight. Use a number from 0 to 1.');
-			evaluationOptions.opponentRiskWeight = v;
-		} else if (arg === '--my-reflect') {
-			evaluationOptions.battleState = evaluationOptions.battleState ?? {};
-			evaluationOptions.battleState.mySide = evaluationOptions.battleState.mySide ?? {};
-			evaluationOptions.battleState.mySide.reflect = true;
-		} else if (arg === '--my-light-screen') {
-			evaluationOptions.battleState = evaluationOptions.battleState ?? {};
-			evaluationOptions.battleState.mySide = evaluationOptions.battleState.mySide ?? {};
-			evaluationOptions.battleState.mySide.lightScreen = true;
-		} else if (arg === '--enemy-reflect') {
-			evaluationOptions.battleState = evaluationOptions.battleState ?? {};
-			evaluationOptions.battleState.enemySide = evaluationOptions.battleState.enemySide ?? {};
-			evaluationOptions.battleState.enemySide.reflect = true;
-		} else if (arg === '--enemy-light-screen') {
-			evaluationOptions.battleState = evaluationOptions.battleState ?? {};
-			evaluationOptions.battleState.enemySide = evaluationOptions.battleState.enemySide ?? {};
-			evaluationOptions.battleState.enemySide.lightScreen = true;
-		} else if (arg.startsWith('--my-spikes=')) {
-			const v = parseInt(arg.split('=')[1], 10);
-			if (v < 0 || v > 3 || Number.isNaN(v)) throw new Error('Invalid --my-spikes. Use 0..3.');
-			evaluationOptions.battleState = evaluationOptions.battleState ?? {};
-			evaluationOptions.battleState.mySide = evaluationOptions.battleState.mySide ?? {};
-			evaluationOptions.battleState.mySide.spikesLayers = v as 0 | 1 | 2 | 3;
-		} else if (arg === '--my-stealth-rock') {
-			evaluationOptions.battleState = evaluationOptions.battleState ?? {};
-			evaluationOptions.battleState.mySide = evaluationOptions.battleState.mySide ?? {};
-			evaluationOptions.battleState.mySide.stealthRock = true;
-		} else if (arg.startsWith('--against-trainer=')) {
-			const parsed = parseAgainstTrainer(arg.split('=')[1]);
+			evaluationOptions.battleState.terrain = parseOption(value, parseTerrain, 'Invalid --terrain. Use electric, grassy, misty, psychic, or none.');
+		},
+		lookahead(value) {
+			evaluationOptions.lookaheadTurns = parseIntegerOption(value, (v) => v === 1 || v === 2 || v === 3, 'Invalid --lookahead. Use 1, 2, or 3.') as 1 | 2 | 3;
+		},
+		'role-weight'(value) {
+			evaluationOptions.roleWeight = parseNumberOption(value, (v) => !Number.isNaN(v) && v >= 0, 'Invalid --role-weight. Use a non-negative number.');
+		},
+		'defensive-weight'(value) {
+			evaluationOptions.defensiveWeight = parseNumberOption(value, (v) => !Number.isNaN(v) && v >= 0, 'Invalid --defensive-weight. Use a non-negative number.');
+		},
+		'opponent-risk-weight'(value) {
+			evaluationOptions.opponentRiskWeight = parseNumberOption(value, (v) => !Number.isNaN(v) && v >= 0 && v <= 1, 'Invalid --opponent-risk-weight. Use a number from 0 to 1.');
+		},
+		'my-spikes'(value) {
+			const spikes = parseIntegerOption(value, (v) => !Number.isNaN(v) && v >= 0 && v <= 3, 'Invalid --my-spikes. Use 0..3.');
+			ensureMySide(evaluationOptions).spikesLayers = spikes as 0 | 1 | 2 | 3;
+		},
+		'against-trainer'(value) {
+			const parsed = parseAgainstTrainer(value);
 			game = parsed.game;
 			trainerName = parsed.trainerName;
-		} else if (arg === '--interactive' || arg === '--tui') {
+		},
+		my(value) {
+			myFile = value;
+		},
+		'my-save'(value) {
+			mySaveFile = value;
+		},
+		enemy(value) {
+			enemyFile = value;
+		},
+	};
+
+	const flagHandlers: Record<string, () => void> = {
+		'allow-switching'() {
+			evaluationOptions.allowSwitching = true;
+		},
+		'my-reflect'() {
+			ensureMySide(evaluationOptions).reflect = true;
+		},
+		'my-light-screen'() {
+			ensureMySide(evaluationOptions).lightScreen = true;
+		},
+		'enemy-reflect'() {
+			ensureEnemySide(evaluationOptions).reflect = true;
+		},
+		'enemy-light-screen'() {
+			ensureEnemySide(evaluationOptions).lightScreen = true;
+		},
+		'my-stealth-rock'() {
+			ensureMySide(evaluationOptions).stealthRock = true;
+		},
+		interactive() {
 			launchTui = true;
-		} else if (arg === '--json') {
+		},
+		tui() {
+			launchTui = true;
+		},
+		json() {
 			jsonOutput = true;
-		} else if (arg === '--help' || arg === '-h') {
+		},
+		help() {
 			showHelp = true;
-		} else if (arg.startsWith('--my=')) {
-			myFile = arg.split('=')[1];
-		} else if (arg.startsWith('--my-save=')) {
-			mySaveFile = arg.split('=')[1];
-		} else if (arg.startsWith('--enemy=')) {
-			enemyFile = arg.split('=')[1];
-		} else if (arg === '--enemy-builder') {
+		},
+		'enemy-builder'() {
 			enemyBuilder = true;
-		} else {
-			if (!myFile) myFile = arg;
-			else if (!enemyFile) enemyFile = arg;
+		},
+	};
+
+	for (const arg of args) {
+		if (arg === '-h') {
+			showHelp = true;
+			continue;
 		}
+
+		const parsedArg = parseCliArg(arg);
+		if (parsedArg?.kind === 'kv') {
+			const handler = kvHandlers[parsedArg.key];
+			if (handler) {
+				handler(parsedArg.value);
+				continue;
+			}
+		}
+		if (parsedArg?.kind === 'flag') {
+			const handler = flagHandlers[parsedArg.key];
+			if (handler) {
+				handler();
+				continue;
+			}
+		}
+
+		if (!myFile) myFile = arg;
+		else if (!enemyFile) enemyFile = arg;
 	}
 
 	if (myFile && mySaveFile) {

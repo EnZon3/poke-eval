@@ -1,7 +1,7 @@
 import { DATA_CACHE } from '../data.js';
 import { selectBestDoublesChoice, selectBestSinglesChoice } from './branching.js';
 import type { BestDoublesChoice, BestSinglesChoice } from './branching.js';
-import { buildRationale, confidenceFromSignals, hazardSwitchInFraction } from './helpers.js';
+import { buildRationale, confidenceFromSignals } from './helpers.js';
 import { buildPairVariants, buildVariants, pairIndexCombinations } from './variants.js';
 import type { EvaluationOptions, MatchupEvaluation, PokemonSet } from '../types.js';
 

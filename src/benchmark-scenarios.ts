@@ -149,13 +149,59 @@ const myDoublesTeam: PokemonSet[] = [
 	},
 ];
 
-export const scenarios: Scenario[] = [
-	{
-		name: 'Skarmory pressure check',
+const DEFAULT_DOUBLES_LEAD_TOLERANCE: NonNullable<Scenario['doublesScoreTolerance']> = {
+	minTop1Score: 0.05,
+	minTop1VsTop2Gap: 0.005,
+};
+
+type SinglesScenarioInput = {
+	name: string;
+	enemy: PokemonSet;
+	enemyKey: string;
+	expectedTop3Contains: string[];
+	sourceNote: string;
+};
+
+function createSinglesScenario(input: SinglesScenarioInput): Scenario {
+	return {
+		name: input.name,
 		format: 'singles',
 		gen: 3,
 		myTeam: mySinglesTeam,
-		enemy: [{
+		enemy: [input.enemy],
+		enemyKey: input.enemyKey,
+		expectedTop3Contains: input.expectedTop3Contains,
+		sourceNote: input.sourceNote,
+	};
+}
+
+type DoublesLeadScenarioInput = {
+	name: string;
+	enemy: [PokemonSet, PokemonSet];
+	enemyKey: string;
+	expectedTop3Contains: string[];
+	sourceNote: string;
+	doublesScoreTolerance?: NonNullable<Scenario['doublesScoreTolerance']>;
+};
+
+function createDoublesLeadScenario(input: DoublesLeadScenarioInput): Scenario {
+	return {
+		name: input.name,
+		format: 'doubles',
+		gen: 9,
+		myTeam: myDoublesTeam,
+		enemy: input.enemy,
+		enemyKey: input.enemyKey,
+		expectedTop3Contains: input.expectedTop3Contains,
+		sourceNote: input.sourceNote,
+		doublesScoreTolerance: input.doublesScoreTolerance ?? DEFAULT_DOUBLES_LEAD_TOLERANCE,
+	};
+}
+
+export const scenarios: Scenario[] = [
+	createSinglesScenario({
+		name: 'Skarmory pressure check',
+		enemy: {
 			species: 'Skarmory',
 			level: 100,
 			nature: 'Impish',
@@ -164,17 +210,14 @@ export const scenarios: Scenario[] = [
 			ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
 			evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 4, spe: 0 },
 			moves: ['Drill Peck', 'Spikes', 'Whirlwind', 'Toxic'],
-		}],
+		},
 		enemyKey: 'Skarmory',
 		expectedTop3Contains: ['Magneton', 'Zapdos', 'Moltres'],
 		sourceNote: 'Smogon ADV Skarmory checks/counters emphasizes Electric/Fire pressure and Magneton trap dynamics.',
-	},
-	{
+	}),
+	createSinglesScenario({
 		name: 'Blissey breaker check',
-		format: 'singles',
-		gen: 3,
-		myTeam: mySinglesTeam,
-		enemy: [{
+		enemy: {
 			species: 'Blissey',
 			level: 100,
 			nature: 'Bold',
@@ -183,17 +226,14 @@ export const scenarios: Scenario[] = [
 			ivs: { hp: 31, atk: 0, def: 31, spa: 31, spd: 31, spe: 31 },
 			evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 4, spe: 0 },
 			moves: ['Seismic Toss', 'Soft-Boiled', 'Thunder Wave', 'Ice Beam'],
-		}],
+		},
 		enemyKey: 'Blissey',
 		expectedTop3Contains: ['Heracross'],
 		sourceNote: 'Smogon ADV Blissey checks/counters: Fighting-types (notably Heracross) consistently pressure Blissey.',
-	},
-	{
+	}),
+	createSinglesScenario({
 		name: 'Tyranitar counter check',
-		format: 'singles',
-		gen: 3,
-		myTeam: mySinglesTeam,
-		enemy: [{
+		enemy: {
 			species: 'Tyranitar',
 			level: 100,
 			nature: 'Adamant',
@@ -202,17 +242,14 @@ export const scenarios: Scenario[] = [
 			ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
 			evs: { hp: 252, atk: 252, def: 0, spa: 0, spd: 4, spe: 0 },
 			moves: ['Rock Slide', 'Earthquake', 'Crunch', 'Dragon Dance'],
-		}],
+		},
 		enemyKey: 'Tyranitar',
 		expectedTop3Contains: ['Heracross', 'Swampert'],
 		sourceNote: 'Smogon ADV Tyranitar checks/counters repeatedly cite Fighting- and Ground/Water-based pressure as primary answers.',
-	},
-	{
+	}),
+	createSinglesScenario({
 		name: 'Aerodactyl anti-air check',
-		format: 'singles',
-		gen: 3,
-		myTeam: mySinglesTeam,
-		enemy: [{
+		enemy: {
 			species: 'Aerodactyl',
 			level: 100,
 			nature: 'Jolly',
@@ -221,17 +258,14 @@ export const scenarios: Scenario[] = [
 			ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
 			evs: { hp: 0, atk: 252, def: 0, spa: 0, spd: 4, spe: 252 },
 			moves: ['Rock Slide', 'Earthquake', 'Double-Edge', 'Aerial Ace'],
-		}],
+		},
 		enemyKey: 'Aerodactyl',
 		expectedTop3Contains: ['Swampert', 'Starmie'],
 		sourceNote: 'ADV consensus has bulky Water/Rock-resistant responses as reliable Aerodactyl checks; Swampert and Starmie are common answers.',
-	},
-	{
+	}),
+	createSinglesScenario({
 		name: 'Salamence anti-Dragon check',
-		format: 'singles',
-		gen: 3,
-		myTeam: mySinglesTeam,
-		enemy: [{
+		enemy: {
 			species: 'Salamence',
 			level: 100,
 			nature: 'Naive',
@@ -240,16 +274,13 @@ export const scenarios: Scenario[] = [
 			ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 },
 			evs: { hp: 40, atk: 252, def: 0, spa: 0, spd: 0, spe: 216 },
 			moves: ['Hidden Power Flying', 'Earthquake', 'Fire Blast', 'Rock Slide'],
-		}],
+		},
 		enemyKey: 'Salamence',
 		expectedTop3Contains: ['Starmie', 'Zapdos'],
 		sourceNote: 'ADV play commonly relies on Ice coverage and strong neutral special pressure into Salamence; Starmie/Zapdos align with this.',
-	},
-	{
+	}),
+	createDoublesLeadScenario({
 		name: 'VGC lead pressure: Heatran + Landorus-T',
-		format: 'doubles',
-		gen: 9,
-		myTeam: myDoublesTeam,
 		enemy: [
 			{
 				species: 'Heatran',
@@ -275,13 +306,9 @@ export const scenarios: Scenario[] = [
 		enemyKey: 'Heatran + Landorus-Therian',
 		expectedTop3Contains: ['Rillaboom + Urshifu-Rapid-Strike'],
 		sourceNote: 'VGC consensus emphasizes Water/Fighting pressure and speed control utility into this Fire/Ground-oriented lead shell.',
-		doublesScoreTolerance: { minTop1Score: 0.05, minTop1VsTop2Gap: 0.005 },
-	},
-	{
+	}),
+	createDoublesLeadScenario({
 		name: 'VGC lead pressure: Incineroar + Rillaboom',
-		format: 'doubles',
-		gen: 9,
-		myTeam: myDoublesTeam,
 		enemy: [
 			{
 				species: 'Incineroar',
@@ -307,13 +334,9 @@ export const scenarios: Scenario[] = [
 		enemyKey: 'Incineroar + Rillaboom',
 		expectedTop3Contains: ['Flutter Mane + Landorus-Therian'],
 		sourceNote: 'VGC play patterns often answer Incineroar/Rillaboom with strong Ground/Fairy pressure and speed utility to avoid Fake Out loops.',
-		doublesScoreTolerance: { minTop1Score: 0.05, minTop1VsTop2Gap: 0.005 },
-	},
-	{
+	}),
+	createDoublesLeadScenario({
 		name: 'VGC speed-control check: Urshifu-RS + Flutter Mane',
-		format: 'doubles',
-		gen: 9,
-		myTeam: myDoublesTeam,
 		enemy: [
 			{
 				species: 'Urshifu-Rapid-Strike',
@@ -339,13 +362,9 @@ export const scenarios: Scenario[] = [
 		enemyKey: 'Urshifu-Rapid-Strike + Flutter Mane',
 		expectedTop3Contains: ['Incineroar + Amoonguss'],
 		sourceNote: 'VGC resources repeatedly stress speed control + redirection + Fake Out as practical tools against fast pressure leads.',
-		doublesScoreTolerance: { minTop1Score: 0.05, minTop1VsTop2Gap: 0.005 },
-	},
-	{
+	}),
+	createDoublesLeadScenario({
 		name: 'VGC Tailwind lead check: Whimsicott + Gholdengo',
-		format: 'doubles',
-		gen: 9,
-		myTeam: myDoublesTeam,
 		enemy: [
 			{
 				species: 'Whimsicott',
@@ -371,13 +390,9 @@ export const scenarios: Scenario[] = [
 		enemyKey: 'Whimsicott + Gholdengo',
 		expectedTop3Contains: ['Incineroar + Flutter Mane'],
 		sourceNote: 'Tailwind + strong spread/special pressure is a staple lead pattern; practical responses favor immediate disruption plus counter-pressure.',
-		doublesScoreTolerance: { minTop1Score: 0.05, minTop1VsTop2Gap: 0.005 },
-	},
-	{
+	}),
+	createDoublesLeadScenario({
 		name: 'VGC Trick Room lead check: Cresselia + Ursaluna',
-		format: 'doubles',
-		gen: 9,
-		myTeam: myDoublesTeam,
 		enemy: [
 			{
 				species: 'Cresselia',
@@ -403,13 +418,9 @@ export const scenarios: Scenario[] = [
 		enemyKey: 'Cresselia + Ursaluna',
 		expectedTop3Contains: ['Rillaboom + Amoonguss'],
 		sourceNote: 'Trick Room setup leads are commonly answered with disruption and defensive tempo tools that can survive and stall key turns.',
-		doublesScoreTolerance: { minTop1Score: 0.05, minTop1VsTop2Gap: 0.005 },
-	},
-	{
+	}),
+	createDoublesLeadScenario({
 		name: 'VGC redirection + setup check: Amoonguss + Volcarona',
-		format: 'doubles',
-		gen: 9,
-		myTeam: myDoublesTeam,
 		enemy: [
 			{
 				species: 'Amoonguss',
@@ -435,13 +446,9 @@ export const scenarios: Scenario[] = [
 		enemyKey: 'Amoonguss + Volcarona',
 		expectedTop3Contains: ['Incineroar + Landorus-Therian'],
 		sourceNote: 'Redirection + setup lead shells reward lines that pressure setup turns while preserving board control and pivot options.',
-		doublesScoreTolerance: { minTop1Score: 0.05, minTop1VsTop2Gap: 0.005 },
-	},
-	{
+	}),
+	createDoublesLeadScenario({
 		name: 'VGC weather lead check: Pelipper + Archaludon',
-		format: 'doubles',
-		gen: 9,
-		myTeam: myDoublesTeam,
 		enemy: [
 			{
 				species: 'Pelipper',
@@ -467,13 +474,9 @@ export const scenarios: Scenario[] = [
 		enemyKey: 'Pelipper + Archaludon',
 		expectedTop3Contains: ['Rillaboom + Amoonguss'],
 		sourceNote: 'Rain-oriented leads are commonly checked by weather-aware pressure plus terrain and priority utility for tempo control.',
-		doublesScoreTolerance: { minTop1Score: 0.05, minTop1VsTop2Gap: 0.005 },
-	},
-	{
+	}),
+	createDoublesLeadScenario({
 		name: 'VGC Intimidate pivot lead check: Incineroar + Landorus-T',
-		format: 'doubles',
-		gen: 9,
-		myTeam: myDoublesTeam,
 		enemy: [
 			{
 				species: 'Incineroar',
@@ -500,7 +503,7 @@ export const scenarios: Scenario[] = [
 		expectedTop3Contains: ['Urshifu-Rapid-Strike + Landorus-Therian'],
 		sourceNote: 'Double-Intimidate pivot leads are typically punished by strong special or crit-leaning pressure that resists attack-drop loops.',
 		doublesScoreTolerance: { minTop1Score: 0.05, minTop1VsTop2Gap: 0.001 },
-	},
+	}),
 	{
 		name: 'Mechanics policy: Mega enabled by generation (Gen 6)',
 		format: 'singles',

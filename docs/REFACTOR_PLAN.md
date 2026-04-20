@@ -34,11 +34,11 @@ Branch: `refactor/core-boundaries`
 - [x] 8. Split `src/evaluation/index.ts` into orchestration + branch logic modules.
 - [x] 9. De-duplicate strictly identical singles/doubles shared logic only.
 - [x] 10. Move benchmark scenario data out of `src/benchmark.ts`.
-- [ ] 11. Introduce benchmark fixture builders for repeated scenario shapes.
-- [ ] 12. Extract TUI view-model transformations from rendering.
-- [ ] 13. Standardize repeated CLI option parsing/validation patterns.
-- [ ] 14. Add module-level public-surface tests for refactored areas.
-- [ ] 15. Final consolidation: remove dead internals, rerun `validate:all`, compare benchmark output to baseline.
+- [x] 11. Introduce benchmark fixture builders for repeated scenario shapes.
+- [x] 12. Extract TUI view-model transformations from rendering.
+- [x] 13. Standardize repeated CLI option parsing/validation patterns.
+- [x] 14. Add module-level public-surface tests for refactored areas.
+- [x] 15. Final consolidation: remove dead internals, rerun `validate:all`, compare benchmark output to baseline.
 
 ## Baseline Artifacts
 

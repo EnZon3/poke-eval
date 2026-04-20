@@ -1,7 +1,7 @@
 import { DATA_CACHE } from '../data.js';
 import { typeEffectiveness } from '../mechanics.js';
 import type { BattlePokemon, BattleState, MoveEntry } from '../types.js';
-import { clamp, getSideForDefender, stageMultiplier, statusActionChance, typeNormalized } from './helpers.js';
+import { getSideForDefender, stageMultiplier, statusActionChance, typeNormalized } from './helpers.js';
 import type { DamageProfile } from './types.js';
 
 function resolvedHitCount(move: MoveEntry): number {

@@ -135,7 +135,6 @@ export function defensiveReliabilityScore(
 ): number {
 	if (!myProfile || !enemyProfile) return 0;
 
-	const myExpectedFrac = myProfile.expected / Math.max(1, defender.stats.hp);
 	const enemyExpectedFrac = enemyProfile.expected / Math.max(1, attacker.stats.hp);
 
 	const myKoRace = (myProfile.oneHkoChance * 0.7) + (myProfile.twoHkoChance * 0.3);
