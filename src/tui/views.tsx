@@ -240,7 +240,7 @@ export function ResultsView(
 ): React.JSX.Element {
 	const screenWidth = Math.max(1, terminalColumns);
 	const screenHeight = Math.max(1, terminalRows);
-	const viewModel = buildResultsViewModel(results, selectedIndex, expandedEnemyKey, terminalColumns, terminalRows);
+	const viewModel = buildResultsViewModel(results, selectedIndex, expandedEnemyKey, terminalColumns, terminalRows, error !== null);
 	return (
 		<Box width={screenWidth} height={screenHeight} flexDirection="column" borderStyle="round" borderColor="green" paddingX={1} overflow="hidden">
 			<Text bold color="green" wrap="truncate-end">Matchup Results</Text>

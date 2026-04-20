@@ -56,6 +56,7 @@ export function buildResultsViewModel(
 	expandedEnemyKey: string | null,
 	terminalColumns: number,
 	terminalRows: number,
+	hasError = false,
 ): ResultsViewModel {
 	const entries = Object.entries(results ?? {});
 	const screenWidth = Math.max(1, terminalColumns);
@@ -74,7 +75,7 @@ export function buildResultsViewModel(
 	const cardTextWidth = panelInnerWidth(cardWidth);
 	const expandedCardWidth = contentWidth;
 	const expandedCardTextWidth = panelInnerWidth(expandedCardWidth);
-	const footerRows = 1;
+	const footerRows = hasError ? 2 : 1;
 	const headerRows = 3;
 	const gridHeight = Math.max(cardOuterHeight, innerHeight - headerRows - footerRows);
 	const gridRows = Math.max(1, Math.floor(gridHeight / cardOuterHeight));
