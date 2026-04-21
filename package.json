@@ -16,6 +16,7 @@
 		"package:bin:macos-arm64": "npm run build:bundle && pkg build/esm/main.js --targets node22-macos-arm64 --output release/poke-engine-macos-arm64",
 		"package:bin:win-x64": "npm run build:bundle && pkg build/esm/main.js --targets node22-win-x64 --output release/poke-engine-win-x64.exe",
 		"package:bin:all": "npm run package:bin:linux-x64 && npm run package:bin:macos-x64 && npm run package:bin:macos-arm64 && npm run package:bin:win-x64",
+		"package:clean": "rm -rf release/*",
 		"validate:bench": "tsx src/benchmark.ts",
 		"validate:typecheck": "tsc --noEmit",
 		"validate:all": "npm run validate:typecheck && npm run validate:test && npm run validate:accuracy && npm run validate:bench"
